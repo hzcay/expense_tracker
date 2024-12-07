@@ -396,6 +396,44 @@ public class ExpenseDashboard extends JFrame {
                 }
             }
         };
+        chartContent.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                int x = e.getX();
+                int y = e.getY();
+                int centerX = chartContent.getWidth() / 2;
+                int centerY = ((chartContent.getHeight() - 120) / 2) - 30;
+                int diameter = (int) ((Math.min(chartContent.getWidth(), chartContent.getHeight() - 60) - 25 * 2)
+                        * 0.8);
+                int radius = diameter / 2;
+
+                double dx = x - centerX;
+                double dy = y - centerY;
+                double distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance <= radius) {
+                    double angle = Math.toDegrees(Math.atan2(dy, dx)) + 360;
+                    angle = (angle + 90) % 360;
+
+                    int startAngle = 0;
+                    int[] values = { 30, 20, 15, 25, 10 };
+                    String[] labels = { "Food", "Housing", "Transport", "Shopping", "Others" };
+                    int total = 0;
+                    for (int value : values)
+                        total += value;
+
+                    for (int i = 0; i < values.length; i++) {
+                        int arcAngle = (int) Math.round(360.0 * values[i] / total);
+                        if (angle >= startAngle && angle < startAngle + arcAngle) {
+                            JOptionPane.showMessageDialog(chartContent,
+                                    "Category: " + labels[i] + "\nValue: " + values[i] + "%");
+                            break;
+                        }
+                        startAngle += arcAngle;
+                    }
+                }
+            }
+        });
         chartContent.setBackground(Color.WHITE);
         chartContent.setPreferredSize(new Dimension(0, 350));
 

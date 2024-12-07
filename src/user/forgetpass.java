@@ -2,9 +2,6 @@ package user;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-
-import cont.connect;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
@@ -12,11 +9,12 @@ import java.io.IOException;
 import java.sql.*;
 import java.awt.image.*;
 
-public class forgetpass extends JFrame {
+public class Forgetpass extends JFrame {
+    private User user;
     private JTextField usernameEntry;
     private JPasswordField passwordEntry, password2Entry;
 
-    public forgetpass() {
+    public Forgetpass() {
         setTitle("Expense Tracker - Forgot Password"); // Đặt tiêu đề cho cửa sổ
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1193, 695);
@@ -240,33 +238,19 @@ public class forgetpass extends JFrame {
             return;
         }
 
-        try (Connection conn = connect.getConnection()) {
-            // Check if username exists
-            String checkUserQuery = "SELECT * FROM account WHERE username = ?";
-            PreparedStatement checkStmt = conn.prepareStatement(checkUserQuery);
-            checkStmt.setString(1, username);
-            ResultSet rs = checkStmt.executeQuery();
-
-            if (!rs.next()) {
-                JOptionPane.showMessageDialog(this, "Username does not exist.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            // Update password
-            String updateQuery = "UPDATE account SET password = ? WHERE username = ?";
-            PreparedStatement updateStmt = conn.prepareStatement(updateQuery);
-            updateStmt.setString(1, password);
-            updateStmt.setString(2, username);
-            updateStmt.executeUpdate();
-
+        try {
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/expense_management", "root",
+                    "123456");
+            // Add your code to handle the connection here
+            user = new User(username, password);
+            user.forgetpass(conn);
             JOptionPane.showMessageDialog(this, "Password updated successfully!", "Success",
                     JOptionPane.INFORMATION_MESSAGE);
             dispose(); // Close the forgetpass frame
             new LoginPage(); // Open the login frame (replace with your login frame)
-        } catch (SQLException ex) {
-            ex.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Connection error. Try again.", "Error", JOptionPane.ERROR_MESSAGE);
         }
-
     }
 }

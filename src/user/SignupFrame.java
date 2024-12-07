@@ -2,7 +2,6 @@ package user;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import cont.connect;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
@@ -11,6 +10,7 @@ import java.sql.*;
 import java.awt.image.*;
 
 public class SignupFrame extends JFrame {
+    private User user;
     private JTextField usernameEntry;
     private JPasswordField passwordEntry;
     private JPasswordField password2Entry;
@@ -253,32 +253,19 @@ public class SignupFrame extends JFrame {
             return;
         }
 
-        try (Connection conn = connect.getConnection()) {
-            // Check if username exists
-            String checkUserQuery = "SELECT * FROM account WHERE username = ?";
-            PreparedStatement checkStmt = conn.prepareStatement(checkUserQuery);
-            checkStmt.setString(1, username);
-            ResultSet rs = checkStmt.executeQuery();
-
-            if (rs.next()) {
-                JOptionPane.showMessageDialog(this, "Username already exists.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            // Insert new user
-            String insertQuery = "INSERT INTO account (email, username, password) VALUES (?, ?, ?)";
-            PreparedStatement insertStmt = conn.prepareStatement(insertQuery);
-            insertStmt.setString(1, email);
-            insertStmt.setString(2, username);
-            insertStmt.setString(3, password);
-            insertStmt.executeUpdate();
-
-            JOptionPane.showMessageDialog(this, "Sign Up successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
-            dispose(); // Close the SignupFrame
-            new LoginPage(); // Open the login frame (replace with your login frame)
+        try {
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/expense_management", "root",
+                    "123456");
+            user = new User(email, username, password);
+            user.setUser(conn);
+            JOptionPane.showMessageDialog(this, "User created successfully.", "Success",
+                    JOptionPane.INFORMATION_MESSAGE);
+            dispose();
+            new LoginPage().setVisible(true);
         } catch (SQLException ex) {
             ex.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Connection error. Try again.", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "An error occurred. Please try again.", "Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 }
