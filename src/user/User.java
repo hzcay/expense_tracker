@@ -88,9 +88,6 @@ public class User {
         this.password = password;
     }
 
-    /**
-     * Hiển thị thông tin người dùng.
-     */
     public void displayUserInfo() {
         System.out.println("User Information:");
         System.out.println("Email: " + (email.isEmpty() ? "N/A" : email));

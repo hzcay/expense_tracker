@@ -3,7 +3,7 @@ package user;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 
-import expense.ExpenseDashboard;
+import expense.UI.MainScreen;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -286,7 +286,7 @@ public class LoginPage extends JFrame {
                 user.setLoggedIn(true); // Mark the user as logged in
                 setEmailFromDatabase(user, conn); // Get email from the database
                 dispose(); // Close LoginPage
-                new ExpenseDashboard().setVisible(true); // Open the main window or
+                new MainScreen().setVisible(true); // Open the main window or
                 // perform other actions after successful login
             }
         } catch (SQLException ex) {
