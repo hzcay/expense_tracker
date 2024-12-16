@@ -18,7 +18,6 @@ public class MainScreen extends JFrame {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         // Sidebar
         JPanel sidebar = createSidebar();
         add(sidebar, BorderLayout.WEST);
@@ -26,14 +25,16 @@ public class MainScreen extends JFrame {
         // Main content
         JPanel content = new JPanel();
         content.setLayout(new BorderLayout());
-        content.setBackground(new Color(240, 240, 255)); // Soft white background
+        content.setBackground(new Color(240, 240, 255));
         add(content, BorderLayout.CENTER);
 
-        // Create and add ExpenseDashboard panel
+        // Create panels
         ExpenseDashboard dashboard = new ExpenseDashboard();
+
+        // Default view
         content.add(dashboard, BorderLayout.CENTER);
 
-        // Add action listener for the Dashboard button
+        // Get all buttons from sidebar
         JButton[] buttons = new JButton[sidebar.getComponentCount()];
         int buttonIndex = 0;
         for (Component comp : sidebar.getComponents()) {
@@ -42,15 +43,17 @@ public class MainScreen extends JFrame {
             }
         }
 
+        // Add action listeners with panel reloading
         buttons[0].addActionListener(_ -> {
             content.removeAll();
-            content.add(dashboard, BorderLayout.CENTER);
+            content.add(new ExpenseDashboard(), BorderLayout.CENTER); // Create new instance
             content.revalidate();
             content.repaint();
         });
+
         buttons[1].addActionListener(_ -> {
             content.removeAll();
-            content.add(new Extrack(), BorderLayout.CENTER);
+            content.add(new Extrack(), BorderLayout.CENTER); // Create new instance
             content.revalidate();
             content.repaint();
         });

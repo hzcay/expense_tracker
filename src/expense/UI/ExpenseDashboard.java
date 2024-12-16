@@ -44,12 +44,12 @@ public class ExpenseDashboard extends JPanel {
 
     public double getincomebalace() {
         try {
-            String sql = "SELECT income FROM financial_tracker WHERE username = ?";
+            String sql = "SELECT SUM(amount) as total FROM expensetracker WHERE username = ? AND amount > 0";
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setString(1, user.getUsername());
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
-                return rs.getDouble("income");
+                return rs.getDouble("total");
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -59,12 +59,12 @@ public class ExpenseDashboard extends JPanel {
 
     public double getexpensebalace() {
         try {
-            String sql = "SELECT expense FROM financial_tracker WHERE username = ?";
+            String sql = "SELECT ABS(SUM(amount)) as total FROM expensetracker WHERE username = ? AND amount < 0";
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setString(1, user.getUsername());
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
-                return rs.getDouble("expense");
+                return rs.getDouble("total");
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -417,14 +417,16 @@ public class ExpenseDashboard extends JPanel {
                         }
 
                         if (amount >= 0) {
-                            comp.setForeground(new Color(40, 167, 69));
+                            comp.setForeground(new Color(25, 135, 84)); // Darker green for income
+                            comp.setBackground(new Color(40, 167, 69, 40)); // More opaque green background
                             jc.setBorder(BorderFactory.createCompoundBorder(
-                                    BorderFactory.createMatteBorder(0, 0, 0, 3, new Color(40, 167, 69, 50)),
+                                    BorderFactory.createMatteBorder(0, 0, 0, 3, new Color(25, 135, 84, 80)),
                                     BorderFactory.createEmptyBorder(12, 20, 12, 20)));
                         } else {
-                            comp.setForeground(new Color(220, 53, 69));
+                            comp.setForeground(new Color(185, 28, 28)); // Darker red for expense
+                            comp.setBackground(new Color(220, 53, 69, 40)); // More opaque red background
                             jc.setBorder(BorderFactory.createCompoundBorder(
-                                    BorderFactory.createMatteBorder(0, 0, 0, 3, new Color(220, 53, 69, 50)),
+                                    BorderFactory.createMatteBorder(0, 0, 0, 3, new Color(185, 28, 28, 80)),
                                     BorderFactory.createEmptyBorder(12, 20, 12, 20)));
                         }
                         break;

@@ -3,6 +3,7 @@
   "java.project.outputPath": "bin",
   "java.project.referencedLibraries": [
     "lib/mysql-connector-j-9.1.0.jar",
-    "lib/jcalendar-1.4.jar"
+    "lib/jcalendar-1.4.jar",
+    "lib/flatlaf-3.5.4.jar"
   ]
 }
