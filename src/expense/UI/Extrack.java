@@ -30,7 +30,8 @@ public class Extrack extends JPanel {
     private User user = new User("hzcay", "password");
     private JTable table;
 
-    public Extrack() {
+    public Extrack(User u) {
+        user = u;
         conn = null;
         try {
             conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/expense_management",

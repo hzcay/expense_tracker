@@ -188,4 +188,34 @@ public class Tabletransaction {
             e.printStackTrace();
         }
     }
+
+    public Object[][] getTransactionwithDATE(String date) {
+        ArrayList<Object[]> transactionList = new ArrayList<>();
+        String sqlQuery = "SELECT * FROM expensetracker WHERE Username = ? AND Date = ?";
+
+        try (PreparedStatement stmt = conn.prepareStatement(sqlQuery)) {
+            stmt.setString(1, user.getUsername());
+            stmt.setString(2, date);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Object[] row = {
+                            setCategory(rs.getString("category_id")), // Retrieve category name or format
+                            rs.getString("description"),
+                            new java.text.SimpleDateFormat("dd/MM/yyyy").format(rs.getDate("Date")), // Format Date
+                            rs.getDouble("Amount"), // Amount column
+                            rs.getInt("ID") // Transaction ID
+                    };
+                    transactionList.add(row);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error fetching transactions by date: " + e.getMessage());
+            e.printStackTrace();
+            return new Object[0][]; // Return empty array on error
+        }
+
+        // Convert ArrayList to Object[][]
+        return transactionList.toArray(new Object[transactionList.size()][]);
+    }
 }

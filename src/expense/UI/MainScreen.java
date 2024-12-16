@@ -2,10 +2,19 @@ package expense.UI;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+
+import com.formdev.flatlaf.FlatLightLaf;
+
+import user.LoginPage;
+import user.User;
+
 import java.awt.*;
 
 public class MainScreen extends JFrame {
-    public MainScreen() {
+
+    private JButton activeButton;
+
+    public MainScreen(User user) {
         setTitle("Expense Tracking");
         setSize(1200, 800);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -29,7 +38,7 @@ public class MainScreen extends JFrame {
         add(content, BorderLayout.CENTER);
 
         // Create panels
-        ExpenseDashboard dashboard = new ExpenseDashboard();
+        ExpenseDashboard dashboard = new ExpenseDashboard(user);
 
         // Default view
         content.add(dashboard, BorderLayout.CENTER);
@@ -46,14 +55,21 @@ public class MainScreen extends JFrame {
         // Add action listeners with panel reloading
         buttons[0].addActionListener(_ -> {
             content.removeAll();
-            content.add(new ExpenseDashboard(), BorderLayout.CENTER); // Create new instance
+            content.add(new ExpenseDashboard(user), BorderLayout.CENTER);
             content.revalidate();
             content.repaint();
         });
 
         buttons[1].addActionListener(_ -> {
             content.removeAll();
-            content.add(new Extrack(), BorderLayout.CENTER); // Create new instance
+            content.add(new Extrack(user), BorderLayout.CENTER);
+            content.revalidate();
+            content.repaint();
+        });
+
+        buttons[3].addActionListener(_ -> {
+            content.removeAll();
+            content.add(new CalendarPanel(user), BorderLayout.CENTER);
             content.revalidate();
             content.repaint();
         });
@@ -63,26 +79,25 @@ public class MainScreen extends JFrame {
 
     private JPanel createSidebar() {
         JPanel sidebar = new JPanel();
-        // Modern gradient background with a richer blue
-        Color sidebarColor = new Color(28, 35, 51); // Darker, more professional blue
+        Color sidebarColor = new Color(28, 35, 51);
         sidebar.setBackground(sidebarColor);
         sidebar.setPreferredSize(new Dimension(280, getHeight()));
         sidebar.setLayout(new BoxLayout(sidebar, BoxLayout.Y_AXIS));
         sidebar.setBorder(new EmptyBorder(30, 20, 30, 20));
 
-        // Enhanced Logo section with modern design
+        // Logo section remains the same
         JPanel logoPanel = new JPanel();
         logoPanel.setBackground(sidebarColor);
         logoPanel.setLayout(new BoxLayout(logoPanel, BoxLayout.X_AXIS));
 
-        JLabel logoIcon = new JLabel("      ");
+        JLabel logoIcon = new JLabel(" ");
         logoIcon.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 32));
-        logoIcon.setForeground(new Color(82, 186, 255)); // Brighter blue for contrast
+        logoIcon.setForeground(new Color(82, 186, 255));
         logoIcon.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JLabel logoText = new JLabel("Expenses");
+        JLabel logoText = new JLabel("Expenses Tracker");
         logoText.setFont(new Font("Product Sans", Font.BOLD, 24));
-        logoText.setForeground(new Color(240, 240, 255)); // Soft white
+        logoText.setForeground(new Color(240, 240, 255));
         logoText.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
         logoText.setAlignmentX(Component.CENTER_ALIGNMENT);
 
@@ -92,21 +107,66 @@ public class MainScreen extends JFrame {
         sidebar.add(logoPanel);
         sidebar.add(Box.createVerticalStrut(40));
 
-        // Modern menu items with enhanced colors
         String[][] menuItems = {
-                { "📊 Dashboard", "#82BAFF" },
-                { "💸 Expenses", "#82BAFF" },
-                { "📈 Analytics", "#82BAFF" },
-                { "📅 Calendar", "#82BAFF" },
-                { "🏷️ Categories", "#82BAFF" },
-                { "⚙️ Settings", "#82BAFF" }
+                { "Dashboard", "#82BAFF" },
+                { "Expenses", "#82BAFF" },
+                { "Analytics", "#82BAFF" },
+                { "Calendar", "#82BAFF" },
         };
 
-        for (String[] item : menuItems) {
-            JButton button = createModernMenuButton(item[0]);
+        JButton[] buttons = new JButton[menuItems.length];
+        for (int i = 0; i < menuItems.length; i++) {
+            buttons[i] = createModernMenuButton(menuItems[i][0]);
             sidebar.add(Box.createVerticalStrut(12));
-            sidebar.add(button);
+            sidebar.add(buttons[i]);
         }
+
+        // Set initial active button
+        activeButton = buttons[0];
+        activeButton.setBackground(new Color(82, 186, 255));
+        activeButton.setForeground(Color.WHITE);
+
+        sidebar.add(Box.createVerticalGlue());
+
+        JButton logoutButton = createModernMenuButton("🚪 Logout");
+        logoutButton.removeActionListener(logoutButton.getActionListeners()[0]); // Remove the color change listener
+        sidebar.add(Box.createVerticalStrut(12));
+        sidebar.add(logoutButton);
+        sidebar.add(Box.createVerticalStrut(20));
+        // Add logout functionality with custom styled dialog
+        logoutButton.addActionListener(e -> {
+            // Create custom dialog styling
+            Object[] options = { "Yes", "No" };
+            JOptionPane pane = new JOptionPane(
+                    "Are you sure you want to logout?",
+                    JOptionPane.QUESTION_MESSAGE,
+                    JOptionPane.YES_NO_OPTION,
+                    null,
+                    options,
+                    options[1] // Default to "No"
+            );
+
+            // Style the dialog
+            pane.setBackground(new Color(240, 240, 255));
+            UIManager.put("OptionPane.messageFont", new Font("Product Sans", Font.PLAIN, 16));
+            UIManager.put("Button.font", new Font("Product Sans", Font.BOLD, 14));
+
+            // Create and show dialog
+            JDialog dialog = pane.createDialog(this, "Logout");
+            dialog.setAlwaysOnTop(true);
+            dialog.setModal(true);
+            dialog.setVisible(true);
+
+            // Handle result
+            Object selectedValue = pane.getValue();
+            if (selectedValue != null && selectedValue.equals(options[0])) { // "Yes" selected
+                setVisible(false);
+                dispose();
+                SwingUtilities.invokeLater(() -> {
+                    new LoginPage().setVisible(true);
+                });
+            }
+        });
 
         return sidebar;
     }
@@ -118,13 +178,14 @@ public class MainScreen extends JFrame {
                 Graphics2D g2d = (Graphics2D) g.create();
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-                if (getModel().isPressed()) {
-                    g2d.setColor(new Color(37, 44, 61)); // Darker shade when pressed
+                if (this == activeButton) {
+                    g2d.setColor(new Color(82, 186, 255)); // Active button color
+                } else if (getModel().isPressed()) {
+                    g2d.setColor(new Color(28, 35, 51)); // Changed to match sidebar
                 } else if (getModel().isRollover()) {
-                    g2d.setPaint(new GradientPaint(0, 0, new Color(45, 55, 72),
-                            getWidth(), getHeight(), new Color(52, 63, 83))); // Gradient on hover
+                    g2d.setColor(new Color(28, 35, 51)); // Changed to match sidebar
                 } else {
-                    g2d.setColor(new Color(37, 47, 63)); // Base color
+                    g2d.setColor(new Color(28, 35, 51)); // Changed to match sidebar
                 }
 
                 g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
@@ -133,7 +194,7 @@ public class MainScreen extends JFrame {
             }
         };
 
-        button.setForeground(new Color(200, 215, 235)); // Softer text color
+        button.setForeground(new Color(200, 215, 235));
         button.setFont(new Font("Product Sans", Font.PLAIN, 16));
         button.setOpaque(false);
         button.setContentAreaFilled(false);
@@ -143,28 +204,35 @@ public class MainScreen extends JFrame {
         button.setAlignmentX(Component.LEFT_ALIGNMENT);
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        // Enhanced hover effects with smoother color transition
         button.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseEntered(java.awt.event.MouseEvent evt) {
-                button.setForeground(new Color(82, 186, 255)); // Bright blue on hover
-                button.putClientProperty("hover", true);
+                if (button != activeButton) {
+                    button.setForeground(new Color(82, 186, 255));
+                }
                 button.repaint();
             }
 
             @Override
             public void mouseExited(java.awt.event.MouseEvent evt) {
-                button.setForeground(new Color(200, 215, 235)); // Back to original color
-                button.putClientProperty("hover", false);
+                if (button != activeButton) {
+                    button.setForeground(new Color(200, 215, 235));
+                }
                 button.repaint();
             }
+        });
+
+        button.addActionListener(e -> {
+            if (activeButton != null) {
+                activeButton.setForeground(new Color(200, 215, 235));
+            }
+            activeButton = button;
+            button.setForeground(Color.WHITE);
+            button.repaint();
         });
 
         button.setMaximumSize(new Dimension(240, 45));
         return button;
     }
 
-    public static void main(String[] args) {
-        new MainScreen();
-    }
 }

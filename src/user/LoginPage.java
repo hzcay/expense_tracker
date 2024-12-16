@@ -3,6 +3,8 @@ package user;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 
+import com.formdev.flatlaf.FlatLightLaf;
+
 import expense.UI.MainScreen;
 
 import java.awt.*;
@@ -39,6 +41,12 @@ public class LoginPage extends JFrame {
             panel.setLayout(null);
             setContentPane(panel);
         } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            UIManager.setLookAndFeel(new FlatLightLaf());
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -286,8 +294,8 @@ public class LoginPage extends JFrame {
                 user.setLoggedIn(true); // Mark the user as logged in
                 setEmailFromDatabase(user, conn); // Get email from the database
                 dispose(); // Close LoginPage
-                new MainScreen().setVisible(true); // Open the main window or
-                // perform other actions after successful login
+                MainScreen mainScreen = new MainScreen(user); // Pass the user to MainScreen
+                mainScreen.setVisible(true); // Open the main window
             }
         } catch (SQLException ex) {
             JOptionPane.showMessageDialog(this, "Connection error. Try again.", "Error", JOptionPane.ERROR_MESSAGE);

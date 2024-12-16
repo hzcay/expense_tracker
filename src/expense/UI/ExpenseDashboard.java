@@ -21,9 +21,10 @@ import user.User;
 public class ExpenseDashboard extends JPanel {
     private Connection conn;
     private Tabletransaction tb;
-    private User user = new User("hzcay", "password");
+    private User user;
 
-    public ExpenseDashboard() {
+    public ExpenseDashboard(User u) {
+        user = u;
         conn = null;
         try {
             conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/expense_management",
@@ -392,6 +393,11 @@ public class ExpenseDashboard extends JPanel {
                 Component comp = super.prepareRenderer(renderer, row, column);
                 JComponent jc = (JComponent) comp;
 
+                // Center align all cells
+                if (comp instanceof JLabel) {
+                    ((JLabel) comp).setHorizontalAlignment(SwingConstants.CENTER);
+                }
+
                 // Enhanced row colors with subtle gradient
                 if (!isRowSelected(row)) {
                     Color baseColor = row % 2 == 0 ? new Color(249, 250, 251) : new Color(255, 255, 255);
@@ -417,14 +423,14 @@ public class ExpenseDashboard extends JPanel {
                         }
 
                         if (amount >= 0) {
-                            comp.setForeground(new Color(25, 135, 84)); // Darker green for income
-                            comp.setBackground(new Color(40, 167, 69, 40)); // More opaque green background
+                            comp.setForeground(new Color(25, 135, 84));
+                            comp.setBackground(new Color(40, 167, 69, 40));
                             jc.setBorder(BorderFactory.createCompoundBorder(
                                     BorderFactory.createMatteBorder(0, 0, 0, 3, new Color(25, 135, 84, 80)),
                                     BorderFactory.createEmptyBorder(12, 20, 12, 20)));
                         } else {
-                            comp.setForeground(new Color(185, 28, 28)); // Darker red for expense
-                            comp.setBackground(new Color(220, 53, 69, 40)); // More opaque red background
+                            comp.setForeground(new Color(185, 28, 28));
+                            comp.setBackground(new Color(220, 53, 69, 40));
                             jc.setBorder(BorderFactory.createCompoundBorder(
                                     BorderFactory.createMatteBorder(0, 0, 0, 3, new Color(185, 28, 28, 80)),
                                     BorderFactory.createEmptyBorder(12, 20, 12, 20)));
@@ -448,7 +454,7 @@ public class ExpenseDashboard extends JPanel {
                 return comp;
             }
 
-            // Custom header renderer
+            // Custom header renderer with centered text
             @Override
             public JTableHeader createDefaultTableHeader() {
                 return new JTableHeader(columnModel) {
@@ -466,7 +472,7 @@ public class ExpenseDashboard extends JPanel {
                                 header.setBorder(BorderFactory.createCompoundBorder(
                                         BorderFactory.createMatteBorder(0, 0, 2, 0, new Color(82, 186, 255)),
                                         BorderFactory.createEmptyBorder(10, 20, 10, 20)));
-                                header.setHorizontalAlignment(JLabel.LEFT);
+                                header.setHorizontalAlignment(SwingConstants.CENTER);
                                 return header;
                             }
                         };
@@ -485,7 +491,7 @@ public class ExpenseDashboard extends JPanel {
             }
         };
 
-        // Enhanced table styling
+        // Rest of the code remains the same...
         table.setRowHeight(60);
         table.setSelectionBackground(new Color(82, 186, 255, 15));
         table.setSelectionForeground(new Color(28, 35, 51));
@@ -494,7 +500,7 @@ public class ExpenseDashboard extends JPanel {
         table.setFillsViewportHeight(true);
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-        // Smooth hover effect
+        // Mouse listeners remain the same...
         table.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
             private int lastRow = -1;
 
@@ -512,7 +518,6 @@ public class ExpenseDashboard extends JPanel {
             }
         });
 
-        // Add mouse listener for click effect
         table.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseExited(java.awt.event.MouseEvent e) {
                 table.clearSelection();
@@ -545,7 +550,7 @@ public class ExpenseDashboard extends JPanel {
         iconLabel.setHorizontalAlignment(SwingConstants.CENTER);
         iconLabel.setForeground(new Color(28, 35, 51));
 
-        JLabel titleLabel = new JLabel("Recent Transactions");
+        JLabel titleLabel = new JLabel("Transaction History");
         titleLabel.setFont(new Font("Product Sans", Font.BOLD, 24));
         titleLabel.setForeground(new Color(28, 35, 51));
         titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
@@ -591,10 +596,6 @@ public class ExpenseDashboard extends JPanel {
         tablePanel.setBorder(new EmptyBorder(10, 20, 20, 20));
 
         return tablePanel;
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(ExpenseDashboard::new);
     }
 
     // RoundedBorder class for rounded edges
