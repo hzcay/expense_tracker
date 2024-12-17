@@ -2,6 +2,9 @@ package user;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+
+import expense.Connection.connectdb;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
@@ -11,6 +14,7 @@ import java.awt.image.*;
 
 public class SignupFrame extends JFrame {
     private User user;
+    private Connection conn = new connectdb().getconnectdb();
     private JTextField usernameEntry;
     private JPasswordField passwordEntry;
     private JPasswordField password2Entry;
@@ -254,8 +258,6 @@ public class SignupFrame extends JFrame {
         }
 
         try {
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/expense_management", "root",
-                    "123456");
             user = new User(email, username, password);
             user.setUser(conn);
             JOptionPane.showMessageDialog(this, "User created successfully.", "Success",

@@ -55,14 +55,11 @@ public class transaction {
         this.description = description;
     }
 
-    public void setCategory(String category) {
-        Connection conn = null;
+    public void setCategory(String category, Connection conn) {
         try {
             if (category.equals("📦 Others")) {
                 this.category = (getType().equals("Income")) ? "IC_0" : "EX_0";
             } else {
-                conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/expense_management", "root",
-                        "123456");
                 String sql = "SELECT * FROM category WHERE name = ?";
                 PreparedStatement stmt = conn.prepareStatement(sql);
                 stmt.setString(1, category);

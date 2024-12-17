@@ -54,10 +54,8 @@ public class Tabletransaction {
     }
 
     public String setCategory(String category) {
-        Connection conn = null;
         try {
-            conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/expense_management", "root",
-                    "123456");
+
             String sql = "SELECT * FROM category WHERE category_id = ?";
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setString(1, category);
@@ -78,8 +76,6 @@ public class Tabletransaction {
         int maxId = 0;
 
         try {
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/expense_management", "root",
-                    "123456");
             String sql = "SELECT MAX(id) FROM expensetracker";
 
             PreparedStatement stmt = conn.prepareStatement(sql);
@@ -102,17 +98,14 @@ public class Tabletransaction {
     }
 
     public void addTransaction(transaction transaction) {
-        Connection conn = null;
         try {
-            conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/expense_management", "root",
-                    "123456");
             String sql = "INSERT INTO expensetracker (Date, Description, Category_id, Amount, username) VALUES (?, ?, ?, ?, ?)";
             PreparedStatement stmt = conn.prepareStatement(sql);
             double amount = transaction.getAmount();
             if (determineTransactionType(transaction.getCategory()).equals("Expense")) {
-                amount = -1 * Math.abs(amount); // Store negative values for expenses
+                amount = -1 * Math.abs(amount);
             } else {
-                amount = Math.abs(amount); // Store positive values for income
+                amount = Math.abs(amount);
             }
             stmt.setString(1, transaction.getDate());
             stmt.setString(2, transaction.getDescription());
@@ -127,10 +120,7 @@ public class Tabletransaction {
     }
 
     public void deleteTransaction(int id) {
-        Connection conn = null;
         try {
-            conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/expense_management", "root",
-                    "123456");
             String sql = "DELETE FROM expensetracker WHERE id = ?";
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setInt(1, id);

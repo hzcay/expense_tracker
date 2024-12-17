@@ -2,6 +2,7 @@ package expense.UI;
 
 import com.formdev.flatlaf.FlatLightLaf;
 
+import expense.Connection.connectdb;
 import expense.module.Tabletransaction;
 import user.User;
 
@@ -21,7 +22,7 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 
 public class CalendarPanel extends JPanel {
-    private Connection conn;
+    private Connection conn = new connectdb().getconnectdb();
     private Tabletransaction tb;
     private User user;
     private LocalDate currentDate = LocalDate.now();
@@ -31,17 +32,8 @@ public class CalendarPanel extends JPanel {
 
     public CalendarPanel(User u) {
         user = u;
-        initializeDatabaseConnection();
         setupLayout();
         renderCalendar(currentDate);
-    }
-
-    private void initializeDatabaseConnection() {
-        try {
-            conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/expense_management", "root", "123456");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     private void setupLayout() {

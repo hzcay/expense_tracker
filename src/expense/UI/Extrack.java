@@ -24,22 +24,16 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 
+import expense.Connection.connectdb;
+
 public class Extrack extends JPanel {
-    private Connection conn;
+    private Connection conn = new connectdb().getconnectdb();
     private Tabletransaction tb;
     private User user = new User("hzcay", "password");
     private JTable table;
 
     public Extrack(User u) {
         user = u;
-        conn = null;
-        try {
-            conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/expense_management",
-                    "root",
-                    "123456");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         setLayout(new BorderLayout());
         setPreferredSize(new Dimension(1200, 800));
         setBackground(new Color(240, 242, 245));
@@ -303,10 +297,10 @@ public class Extrack extends JPanel {
                         for (Component btn : ((JPanel) comp).getComponents()) {
                             if (btn instanceof JButton) {
                                 okButton = (JButton) btn;
-                                okButton.setPreferredSize(new Dimension(80, 30)); // Reduced button size
-                                okButton.setBackground(new Color(37, 47, 63)); // Changed to dark blue to match UI
+                                okButton.setPreferredSize(new Dimension(80, 30));
+                                okButton.setBackground(new Color(37, 47, 63));
                                 okButton.setForeground(Color.WHITE);
-                                okButton.setFont(new Font("Inter", Font.BOLD, 12)); // Smaller font
+                                okButton.setFont(new Font("Inter", Font.BOLD, 12));
                                 okButton.setBorderPainted(false);
                                 okButton.setFocusPainted(false);
                             }
@@ -576,7 +570,7 @@ public class Extrack extends JPanel {
                 }
 
                 transaction newTransaction = new transaction(t.getId(), date, description, category, amount, type);
-                newTransaction.setCategory(category);
+                newTransaction.setCategory(category, conn);
                 tb.updateTransaction(newTransaction);
 
                 // Refresh the UI
@@ -853,7 +847,7 @@ public class Extrack extends JPanel {
                 // Get next available ID
                 int nextId = tb.getNextAvailableId();
                 transaction t = new transaction(nextId, date, description, category, amount, type);
-                t.setCategory(category);
+                t.setCategory(category, conn);
                 tb.addTransaction(t);
 
                 // Refresh the UI

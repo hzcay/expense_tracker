@@ -18,21 +18,15 @@ import java.sql.SQLException;
 import java.sql.Connection;
 import user.User;
 
+import expense.Connection.connectdb;
+
 public class ExpenseDashboard extends JPanel {
-    private Connection conn;
+    private Connection conn = new connectdb().getconnectdb();
     private Tabletransaction tb;
     private User user;
 
     public ExpenseDashboard(User u) {
         user = u;
-        conn = null;
-        try {
-            conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/expense_management",
-                    "root",
-                    "123456");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         setLayout(new BorderLayout());
         setPreferredSize(new Dimension(1200, 800));
         setBackground(new Color(240, 242, 245));
@@ -94,12 +88,10 @@ public class ExpenseDashboard extends JPanel {
 
         mainContent.add(topSection, BorderLayout.NORTH);
 
-        // Center Section with improved spacing and shadows
         JPanel centerSection = new JPanel(new GridLayout(1, 2, 30, 0));
         centerSection.setBackground(new Color(240, 242, 245));
         centerSection.setBorder(new EmptyBorder(30, 0, 0, 0));
 
-        // Add shadow borders to panels
         JPanel chartWrapper = createPanelWithShadow(createChartPanel());
         JPanel tableWrapper = createPanelWithShadow(createTablePanel());
 

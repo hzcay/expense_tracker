@@ -14,8 +14,11 @@ import java.io.IOException;
 import java.sql.*;
 import java.awt.image.*;
 
+import expense.Connection.connectdb;
+
 public class LoginPage extends JFrame {
     private User user;
+    private Connection conn = new connectdb().getconnectdb();
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JButton forgotPasswordButton;
@@ -272,17 +275,7 @@ public class LoginPage extends JFrame {
             return;
         }
 
-        // Connect to the database and check login information
         try {
-            try {
-                Class.forName("com.mysql.cj.jdbc.Driver");
-            } catch (ClassNotFoundException ex) {
-                JOptionPane.showMessageDialog(this, "Database driver not found", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            // Initialize connection
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/expense_management", "root",
-                    "123456");
             // Check user account in the database
             user = new User(username, password);
             user = user.getUser(username, password, conn);
