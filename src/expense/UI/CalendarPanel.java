@@ -63,8 +63,8 @@ public class CalendarPanel extends JPanel {
         JButton prevButton = createNavigationButton("←");
         JButton nextButton = createNavigationButton("→");
 
-        prevButton.addActionListener(e -> changeMonth(-1));
-        nextButton.addActionListener(e -> changeMonth(1));
+        prevButton.addActionListener(_ -> changeMonth(-1));
+        nextButton.addActionListener(_ -> changeMonth(1));
 
         monthLabel.setFont(new Font("Arial", Font.BOLD, 20));
         monthLabel.setForeground(new Color(28, 35, 51));
@@ -313,7 +313,7 @@ public class CalendarPanel extends JPanel {
         });
 
         // Enhanced click action with modern dialog
-        dayButton.addActionListener(e -> {
+        dayButton.addActionListener(_ -> {
             LocalDate selectedDate = yearMonth.atDay(day);
             tb = new Tabletransaction(conn, user);
             Object[][] transactions = tb.getTransactionwithDATE(selectedDate.toString());

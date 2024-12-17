@@ -3,8 +3,6 @@ package expense.UI;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
-import com.formdev.flatlaf.FlatLightLaf;
-
 import user.LoginPage;
 import user.User;
 

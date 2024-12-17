@@ -111,24 +111,21 @@ public class Extrack extends JPanel {
         centerSection.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
 
-        // Table panel taking 80% of the space
-        JPanel tableWrapper = createPanelWithShadow(createTablePanel());
+        // Use a single column for both components
         gbc.gridx = 0;
         gbc.gridy = 0;
-        gbc.weightx = 0.8;
-        gbc.weighty = 1.0;
+        gbc.weightx = 1.0;
+        gbc.weighty = 0.95;
         gbc.fill = GridBagConstraints.BOTH;
-        gbc.insets = new Insets(0, 0, 0, 15); // Add right margin to table panel
+        gbc.insets = new Insets(0, 0, 15, 0); // Add bottom margin
+        JPanel tableWrapper = createPanelWithShadow(createTablePanel());
         centerSection.add(tableWrapper, gbc);
 
-        // Control panel taking 20% of the space and moved to vertical center
+        // Controls panel goes below the table
+        gbc.gridy = 1;
+        gbc.weighty = 0.05;
+        gbc.insets = new Insets(15, 0, 0, 0); // Add top margin
         JPanel expenseControls = createPanelWithShadow(createExpenseControls());
-        gbc.gridx = 1;
-        gbc.weightx = 0.2;
-        gbc.weighty = 1.0;
-        gbc.anchor = GridBagConstraints.CENTER; // Center the controls vertically
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.insets = new Insets(0, 15, 0, 0); // Add left margin for spacing from table
         centerSection.add(expenseControls, gbc);
 
         mainContent.add(centerSection, BorderLayout.CENTER);
@@ -137,11 +134,11 @@ public class Extrack extends JPanel {
 
     private JPanel createExpenseControls() {
         JPanel controls = new JPanel();
-        controls.setLayout(new BoxLayout(controls, BoxLayout.Y_AXIS));
+        controls.setLayout(new BoxLayout(controls, BoxLayout.X_AXIS)); // Changed to horizontal layout
         controls.setBackground(Color.WHITE);
-        controls.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        controls.setBorder(BorderFactory.createEmptyBorder(20, 40, 20, 40));
 
-        JButton addButton = new JButton("Add Expense");
+        JButton addButton = new JButton("Add");
         JButton editButton = new JButton("Edit");
         JButton deleteButton = new JButton("Delete");
 
@@ -154,14 +151,20 @@ public class Extrack extends JPanel {
             button.setBorderPainted(false);
             button.setCursor(new Cursor(Cursor.HAND_CURSOR));
             button.setForeground(Color.WHITE);
-            button.setAlignmentX(Component.CENTER_ALIGNMENT);
-            button.setMaximumSize(new Dimension(200, 40));
+            button.setPreferredSize(new Dimension(180, 45));
         }
 
         // Colors matching sidebar theme
-        addButton.setBackground(new Color(37, 47, 63)); // Dark blue from sidebar
-        editButton.setBackground(new Color(52, 63, 83)); // Lighter blue from sidebar
-        deleteButton.setBackground(new Color(220, 53, 69)); // Keeping red for delete
+        addButton.setBackground(new Color(37, 47, 63));
+        editButton.setBackground(new Color(52, 63, 83));
+        deleteButton.setBackground(new Color(220, 53, 69));
+
+        // Add horizontal spacing between buttons
+        controls.add(addButton);
+        controls.add(Box.createHorizontalStrut(20)); // Add space between buttons
+        controls.add(editButton);
+        controls.add(Box.createHorizontalStrut(20)); // Add space between buttons
+        controls.add(deleteButton);
 
         addButton.addActionListener(_ -> {
             JDialog dialog = new JDialog();
@@ -173,7 +176,7 @@ public class Extrack extends JPanel {
             dialog.setVisible(true);
         });
 
-        editButton.addActionListener(e -> {
+        editButton.addActionListener(_ -> {
             table = getTable();
             int selectedRow = table.getSelectedRow();
             if (selectedRow != -1) {

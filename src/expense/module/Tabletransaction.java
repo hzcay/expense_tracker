@@ -3,8 +3,6 @@ package expense.module;
 import java.sql.*;
 import java.util.ArrayList;
 
-import javax.swing.JTable;
-
 import user.User;
 
 public class Tabletransaction {
