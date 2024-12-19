@@ -21,15 +21,14 @@ public class MainScreen extends JFrame {
 
         try {
             Image icon = Toolkit.getDefaultToolkit().getImage("resources/expense.png"); // Đường dẫn đến icon
-            setIconImage(icon); // Đặt icon
+            setIconImage(icon);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        // Sidebar
+
         JPanel sidebar = createSidebar();
         add(sidebar, BorderLayout.WEST);
 
-        // Main content
         JPanel content = new JPanel();
         content.setLayout(new BorderLayout());
         content.setBackground(new Color(240, 240, 255));
@@ -49,25 +48,36 @@ public class MainScreen extends JFrame {
                 buttons[buttonIndex++] = (JButton) comp;
             }
         }
+        JPanel[] currentPanel = { dashboard };
 
-        // Add action listeners with panel reloading
         buttons[0].addActionListener(_ -> {
             content.removeAll();
-            content.add(new ExpenseDashboard(user), BorderLayout.CENTER);
+            currentPanel[0] = new ExpenseDashboard(user);
+            content.add(currentPanel[0], BorderLayout.CENTER);
             content.revalidate();
             content.repaint();
         });
 
         buttons[1].addActionListener(_ -> {
             content.removeAll();
-            content.add(new Extrack(user), BorderLayout.CENTER);
+            currentPanel[0] = new Extrack(user);
+            content.add(currentPanel[0], BorderLayout.CENTER);
+            content.revalidate();
+            content.repaint();
+        });
+
+        buttons[2].addActionListener(_ -> {
+            content.removeAll();
+            currentPanel[0] = new Analyticspanel(user);
+            content.add(currentPanel[0], BorderLayout.CENTER);
             content.revalidate();
             content.repaint();
         });
 
         buttons[3].addActionListener(_ -> {
             content.removeAll();
-            content.add(new CalendarPanel(user), BorderLayout.CENTER);
+            currentPanel[0] = new CalendarPanel(user);
+            content.add(currentPanel[0], BorderLayout.CENTER);
             content.revalidate();
             content.repaint();
         });
@@ -132,7 +142,7 @@ public class MainScreen extends JFrame {
         sidebar.add(logoutButton);
         sidebar.add(Box.createVerticalStrut(20));
         // Add logout functionality with custom styled dialog
-        logoutButton.addActionListener(e -> {
+        logoutButton.addActionListener(_ -> {
             // Create custom dialog styling
             Object[] options = { "Yes", "No" };
             JOptionPane pane = new JOptionPane(
@@ -220,7 +230,7 @@ public class MainScreen extends JFrame {
             }
         });
 
-        button.addActionListener(e -> {
+        button.addActionListener(_ -> {
             if (activeButton != null) {
                 activeButton.setForeground(new Color(200, 215, 235));
             }

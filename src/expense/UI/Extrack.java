@@ -18,7 +18,6 @@ import user.User;
 
 import java.awt.*;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -212,7 +211,7 @@ public class Extrack extends JPanel {
             }
         });
 
-        deleteButton.addActionListener(e -> {
+        deleteButton.addActionListener(_ -> {
             JTable table = getTable();
             int selectedRow = table.getSelectedRow();
             if (selectedRow != -1) {
@@ -365,7 +364,7 @@ public class Extrack extends JPanel {
         JPanel categoryPanel = new JPanel(new BorderLayout(10, 5));
         categoryPanel.setBackground(new Color(248, 249, 250));
         JLabel categoryLabel = new JLabel("Category");
-        String[] expenseCategories = { "🍔 Food", "🚗 Transport", "🏠 Home", "🎮 Entertainment", "👨‍👩‍👦 Relatives",
+        String[] expenseCategories = { "🍔 Food", "🚗 Transport", "🏠 Home", "🎮 Entertainment", "👦 Relatives",
                 "💰 Invest", "📚 Study", "🛍️ Shopping", "🏪 Market", "💄 Beautify", "🏥 Health", "🎗️ Charity",
                 "💳 Bill", "📦 Others" };
         String[] incomeCategories = { "💼 Salary", "💰 Profit", "🎁 Gift", "💵 Debt Recovery", "🏢 Business",
@@ -432,7 +431,7 @@ public class Extrack extends JPanel {
         datePickerPanel.add(dateField, BorderLayout.CENTER);
         datePickerPanel.add(calendarButton, BorderLayout.EAST);
 
-        calendarButton.addActionListener(event -> {
+        calendarButton.addActionListener(_ -> {
             // Calendar dialog code remains the same
             JDialog dialog = new JDialog();
             dialog.setTitle("Select Date");
@@ -475,7 +474,7 @@ public class Extrack extends JPanel {
                 calendar.setDate(new Date());
             }
 
-            calendar.getDayChooser().addPropertyChangeListener("day", evt -> {
+            calendar.getDayChooser().addPropertyChangeListener("day", _ -> {
                 Date selectedDate = calendar.getDate();
                 if (selectedDate != null) {
                     dateField.setText(displayFormat.format(selectedDate));
@@ -545,7 +544,7 @@ public class Extrack extends JPanel {
         buttonPanel.add(cancelButton);
         updatePanel.add(buttonPanel);
 
-        saveButton.addActionListener(e -> {
+        saveButton.addActionListener(_ -> {
             String type = (String) typeField.getSelectedItem();
             String category = (String) categoryField.getSelectedItem();
             String description = descField.getText();
@@ -573,7 +572,6 @@ public class Extrack extends JPanel {
                 newTransaction.setCategory(category, conn);
                 tb.updateTransaction(newTransaction);
 
-                // Refresh the UI
                 removeAll();
                 add(createMainContent());
                 revalidate();
@@ -586,7 +584,7 @@ public class Extrack extends JPanel {
             }
         });
 
-        cancelButton.addActionListener(e -> {
+        cancelButton.addActionListener(_ -> {
             ((Window) updatePanel.getRootPane().getParent()).dispose();
         });
 
@@ -599,7 +597,6 @@ public class Extrack extends JPanel {
         inputPanel.setBorder(BorderFactory.createEmptyBorder(30, 40, 30, 40));
         inputPanel.setBackground(new Color(248, 249, 250));
 
-        // Title with icon
         JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         titlePanel.setBackground(new Color(248, 249, 250));
         JLabel iconLabel = new JLabel("💰");
@@ -701,7 +698,7 @@ public class Extrack extends JPanel {
         datePickerPanel.add(calendarButton, BorderLayout.EAST);
 
         // Add calendar popup functionality
-        calendarButton.addActionListener(event -> {
+        calendarButton.addActionListener(_ -> {
             // Create and configure modern date picker dialog
             JDialog dialog = new JDialog();
             dialog.setTitle("Select Date");
@@ -749,7 +746,7 @@ public class Extrack extends JPanel {
             }
 
             // Add property change listener to handle date selection
-            calendar.getDayChooser().addPropertyChangeListener("day", evt -> {
+            calendar.getDayChooser().addPropertyChangeListener("day", _ -> {
                 Date selectedDate = calendar.getDate();
                 if (selectedDate != null) {
                     dateField.setText(dateFormat.format(selectedDate));
@@ -821,7 +818,7 @@ public class Extrack extends JPanel {
         buttonPanel.add(cancelButton);
         inputPanel.add(buttonPanel);
 
-        saveButton.addActionListener(e -> {
+        saveButton.addActionListener(_ -> {
             String type = (String) typeField.getSelectedItem();
             String category = (String) categoryField.getSelectedItem();
             String description = descField.getText();
@@ -863,7 +860,7 @@ public class Extrack extends JPanel {
             }
         });
 
-        cancelButton.addActionListener(e -> {
+        cancelButton.addActionListener(_ -> {
             ((Window) inputPanel.getRootPane().getParent()).dispose();
         });
 
@@ -1092,23 +1089,21 @@ public class Extrack extends JPanel {
             }
         });
 
-        // Enhanced table styling
         table.setRowHeight(60);
         table.setSelectionBackground(new Color(82, 186, 255, 15));
         table.setSelectionForeground(new Color(28, 35, 51));
         table.setShowGrid(false);
         table.setIntercellSpacing(new Dimension(0, 0));
         table.setFillsViewportHeight(true);
-        table.setEnabled(true); // Make sure table is enabled
-        // Enhanced header styling
+        table.setEnabled(true);
+
         JTableHeader header = table.getTableHeader();
         header.setFont(new Font("Product Sans", Font.BOLD, 14));
-        header.setBackground(new Color(240, 243, 247)); // Subtle header background
-        header.setForeground(new Color(52, 73, 94)); // Dark slate for header text
+        header.setBackground(new Color(240, 243, 247));
+        header.setForeground(new Color(52, 73, 94));
         header.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, new Color(52, 152, 219)));
         header.setPreferredSize(new Dimension(0, 55));
 
-        // Enhanced scroll pane
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.getViewport().setBackground(Color.WHITE);
@@ -1121,11 +1116,6 @@ public class Extrack extends JPanel {
         JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         headerPanel.setBackground(Color.WHITE);
 
-        JLabel iconLabel = new JLabel("💼");
-        iconLabel.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 24));
-        iconLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        iconLabel.setForeground(new Color(28, 35, 51));
-
         JLabel titleLabel = new JLabel("Recent Transactions");
         titleLabel.setFont(new Font("Product Sans", Font.BOLD, 24));
         titleLabel.setForeground(new Color(28, 35, 51));
@@ -1137,16 +1127,13 @@ public class Extrack extends JPanel {
         headerPanel.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 titleLabel.setForeground(new Color(82, 186, 255));
-                iconLabel.setForeground(new Color(82, 186, 255));
             }
 
             public void mouseExited(java.awt.event.MouseEvent evt) {
                 titleLabel.setForeground(new Color(28, 35, 51));
-                iconLabel.setForeground(new Color(28, 35, 51));
             }
         });
 
-        headerPanel.add(iconLabel);
         headerPanel.add(titleLabel);
 
         JSeparator separator = new JSeparator() {

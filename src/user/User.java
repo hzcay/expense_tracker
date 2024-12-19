@@ -5,20 +5,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-/**
- * Class đại diện cho thông tin người dùng.
- */
 public class User {
 
-    // Fields
     private String email;
     private String username;
     private String password;
     private boolean isLoggedIn;
 
-    /**
-     * Constructor mặc định, tạo một người dùng trống.
-     */
     public User() {
         this.email = "";
         this.username = "";
@@ -26,23 +19,10 @@ public class User {
         this.isLoggedIn = false;
     }
 
-    /**
-     * Constructor tạo người dùng với username và password.
-     *
-     * @param username Tên đăng nhập của người dùng.
-     * @param password Mật khẩu của người dùng.
-     */
     public User(String username, String password) {
-        this("", username, password); // Gọi constructor đầy đủ với email mặc định là rỗng
+        this("", username, password);
     }
 
-    /**
-     * Constructor tạo người dùng với email, username, và password.
-     *
-     * @param email    Email của người dùng.
-     * @param username Tên đăng nhập của người dùng.
-     * @param password Mật khẩu của người dùng.
-     */
     public User(String email, String username, String password) {
         this.email = email;
         this.username = username;
@@ -50,7 +30,6 @@ public class User {
         this.isLoggedIn = false;
     }
 
-    // Getters and Setters
     public String getEmail() {
         return email;
     }
@@ -96,7 +75,6 @@ public class User {
         System.out.println("Is Logged In: " + isLoggedIn);
     }
 
-    // Method to check user information in the database
     public User getUser(String username, String password, Connection conn) throws SQLException {
         String query = "SELECT * FROM account WHERE username = ? AND password = ?";
         try (PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -119,17 +97,16 @@ public class User {
 
     public boolean setUser(Connection conn) throws SQLException {
         try {
-            // Check if username exists
+
             String checkUserQuery = "SELECT * FROM account WHERE username = ?";
             PreparedStatement checkStmt = conn.prepareStatement(checkUserQuery);
             checkStmt.setString(1, username);
             ResultSet rs = checkStmt.executeQuery();
 
             if (rs.next()) {
-                return false; // User already exists
+                return false;
             }
 
-            // Insert new user
             String insertQuery = "INSERT INTO account (email, username, password) VALUES (?, ?, ?)";
             PreparedStatement insertStmt = conn.prepareStatement(insertQuery);
             insertStmt.setString(1, email);
@@ -137,7 +114,7 @@ public class User {
             insertStmt.setString(3, password);
             insertStmt.executeUpdate();
 
-            return true; // User created successfully
+            return true;
         } catch (SQLException e) {
             throw e;
         }
@@ -145,7 +122,6 @@ public class User {
 
     public boolean forgetpass(Connection conn) throws SQLException {
         try {
-            // Check if username exists
             String checkUserQuery = "SELECT * FROM account WHERE username = ?";
             PreparedStatement checkStmt = conn.prepareStatement(checkUserQuery);
             checkStmt.setString(1, username);
@@ -155,7 +131,6 @@ public class User {
                 return false;
             }
 
-            // Update password
             String updateQuery = "UPDATE account SET password = ? WHERE username = ?";
             PreparedStatement updateStmt = conn.prepareStatement(updateQuery);
             updateStmt.setString(1, password);

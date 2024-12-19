@@ -14,7 +14,6 @@ import javax.swing.table.TableCellRenderer;
 
 import java.awt.*;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -47,7 +46,6 @@ public class CalendarPanel extends JPanel {
         setPreferredSize(new Dimension(1200, 800));
         setBackground(new Color(240, 242, 245));
 
-        // Enhanced header panel
         JPanel headerPanel = new JPanel(new BorderLayout(10, 0));
         headerPanel.setBackground(new Color(240, 242, 245));
         headerPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 10));
@@ -61,12 +59,12 @@ public class CalendarPanel extends JPanel {
         monthLabel.setFont(new Font("Arial", Font.BOLD, 20));
         monthLabel.setForeground(new Color(28, 35, 51));
         monthLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        monthLabel.setVerticalAlignment(SwingConstants.CENTER); // Add vertical alignment
+        monthLabel.setVerticalAlignment(SwingConstants.CENTER);
 
         JLabel iconLabel = new JLabel("📅");
         iconLabel.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 24));
         iconLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        iconLabel.setVerticalAlignment(SwingConstants.CENTER); // Add vertical alignment
+        iconLabel.setVerticalAlignment(SwingConstants.CENTER);
         iconLabel.setForeground(new Color(28, 35, 51));
 
         headerPanel.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -83,7 +81,7 @@ public class CalendarPanel extends JPanel {
 
         headerPanel.add(prevButton, BorderLayout.WEST);
 
-        JPanel centerPanel = new JPanel(new GridBagLayout()); // Changed to GridBagLayout
+        JPanel centerPanel = new JPanel(new GridBagLayout());
         centerPanel.setBackground(new Color(240, 242, 245));
 
         JPanel innerPanel = new JPanel();
@@ -92,9 +90,9 @@ public class CalendarPanel extends JPanel {
         innerPanel.add(iconLabel);
         innerPanel.add(Box.createHorizontalStrut(10));
         innerPanel.add(monthLabel);
-        innerPanel.setAlignmentY(Component.CENTER_ALIGNMENT); // Center align the inner panel
+        innerPanel.setAlignmentY(Component.CENTER_ALIGNMENT);
 
-        centerPanel.add(innerPanel); // GridBagLayout will center the component
+        centerPanel.add(innerPanel);
         headerPanel.add(centerPanel, BorderLayout.CENTER);
         headerPanel.add(nextButton, BorderLayout.EAST);
 
@@ -108,14 +106,14 @@ public class CalendarPanel extends JPanel {
     private JButton createNavigationButton(String text) {
         JButton button = new JButton(text);
         button.setFont(new Font("Arial", Font.BOLD, 18));
-        button.setForeground(new Color(0, 102, 204)); // Darker blue color
+        button.setForeground(new Color(0, 102, 204));
         button.setBackground(new Color(240, 242, 245));
         button.setFocusPainted(false);
         button.setBorderPainted(false);
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
         button.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
-                button.setBackground(new Color(204, 229, 255)); // Lighter blue hover
+                button.setBackground(new Color(204, 229, 255));
             }
 
             public void mouseExited(java.awt.event.MouseEvent evt) {
@@ -140,10 +138,8 @@ public class CalendarPanel extends JPanel {
         calendarPanel.removeAll();
         updateMonthLabel();
 
-        // Modify GridLayout to reduce vertical gap
         calendarPanel.setLayout(new GridLayout(0, 7, 5, 5));
 
-        // Enhanced day of week headers
         String[] daysOfWeek = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
         for (String day : daysOfWeek) {
             JLabel label = new JLabel(day, SwingConstants.CENTER);
@@ -180,40 +176,6 @@ public class CalendarPanel extends JPanel {
         calendarPanel.repaint();
     }
 
-    // Add these new methods
-    public double getDailyIncome(LocalDate date) {
-        try {
-            String sql = "SELECT SUM(amount) as total FROM expensetracker WHERE username = ? AND amount > 0 AND DATE(date) = ?";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setString(1, user.getUsername());
-            stmt.setString(2, date.toString());
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                return rs.getDouble("total");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return 0.0;
-    }
-
-    public double getDailyExpense(LocalDate date) {
-        try {
-            String sql = "SELECT ABS(SUM(amount)) as total FROM expensetracker WHERE username = ? AND amount < 0 AND DATE(date) = ?";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setString(1, user.getUsername());
-            stmt.setString(2, date.toString());
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                return rs.getDouble("total");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return 0.0;
-    }
-
-    // Modify createDayButton to show daily totals
     private JButton createDayButton(YearMonth yearMonth, int day, int dayOfWeek) {
         JButton dayButton = new JButton();
         dayButton.setFont(new Font("Inter", Font.PLAIN, 14));
@@ -258,7 +220,6 @@ public class CalendarPanel extends JPanel {
         wrapper.add(amountPanel, BorderLayout.EAST);
         dayButton.add(wrapper, BorderLayout.SOUTH);
 
-        // Modern styling for the button
         dayButton.setBackground(new Color(255, 255, 255));
         dayButton.putClientProperty("JButton.buttonType", "roundRect");
 
@@ -283,7 +244,6 @@ public class CalendarPanel extends JPanel {
             dayButton.setBackground(neutralColor);
         }
 
-        // Enhanced hover effects with different colors
         final Color finalOriginalColor = originalColor;
         dayButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
@@ -304,7 +264,6 @@ public class CalendarPanel extends JPanel {
             }
         });
 
-        // Enhanced click action with modern dialog
         dayButton.addActionListener(_ -> {
             LocalDate selectedDate = yearMonth.atDay(day);
             tb = new Tabletransaction(conn, user);
@@ -337,8 +296,40 @@ public class CalendarPanel extends JPanel {
         return dayButton;
     }
 
+    public double getDailyIncome(LocalDate date) {
+        try {
+            String sql = "SELECT SUM(amount) as total FROM expensetracker WHERE username = ? AND amount > 0 AND DATE(date) = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, user.getUsername());
+            stmt.setString(2, date.toString());
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getDouble("total");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0.0;
+    }
+
+    public double getDailyExpense(LocalDate date) {
+        try {
+            String sql = "SELECT ABS(SUM(amount)) as total FROM expensetracker WHERE username = ? AND amount < 0 AND DATE(date) = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, user.getUsername());
+            stmt.setString(2, date.toString());
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getDouble("total");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0.0;
+    }
+
     private JTable getTable(String date) {
-        if (table == null) { // Create table only once
+        if (table == null) {
             String[] columns = { "Category", "Description", "Date", "Amount" };
             tb = new Tabletransaction(conn, user);
             Object[][] data = tb.getTransactionwithDATE(date);
@@ -358,24 +349,21 @@ public class CalendarPanel extends JPanel {
                 Component comp = super.prepareRenderer(renderer, row, column);
                 JComponent jc = (JComponent) comp;
 
-                // Center align all cells
                 if (comp instanceof JLabel) {
                     ((JLabel) comp).setHorizontalAlignment(SwingConstants.CENTER);
                 }
 
-                // Enhanced row colors with subtle gradient
                 if (!isRowSelected(row)) {
                     Color baseColor = row % 2 == 0 ? new Color(249, 250, 251) : new Color(255, 255, 255);
                     comp.setBackground(baseColor);
                 }
 
-                // Enhanced styling for different columns
                 switch (column) {
-                    case 0: // Category
+                    case 0:
                         comp.setFont(new Font("Inter", Font.BOLD, 14));
                         comp.setForeground(new Color(28, 35, 51));
                         break;
-                    case 3: // Amount
+                    case 3:
                         comp.setFont(new Font("Inter", Font.BOLD, 14));
                         Object value = getValueAt(row, column);
                         double amount = 0;
@@ -407,7 +395,6 @@ public class CalendarPanel extends JPanel {
                         jc.setBorder(BorderFactory.createEmptyBorder(12, 20, 12, 20));
                 }
 
-                // Enhanced selection styling
                 if (isRowSelected(row)) {
                     comp.setBackground(new Color(82, 186, 255, 20));
                     comp.setForeground(new Color(28, 35, 51));
@@ -419,7 +406,6 @@ public class CalendarPanel extends JPanel {
                 return comp;
             }
 
-            // Custom header renderer with centered text
             @Override
             public JTableHeader createDefaultTableHeader() {
                 return new JTableHeader(columnModel) {
@@ -456,7 +442,6 @@ public class CalendarPanel extends JPanel {
             }
         };
 
-        // Rest of the code remains the same...
         table.setRowHeight(60);
         table.setSelectionBackground(new Color(82, 186, 255, 15));
         table.setSelectionForeground(new Color(28, 35, 51));
@@ -465,7 +450,6 @@ public class CalendarPanel extends JPanel {
         table.setFillsViewportHeight(true);
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-        // Mouse listeners remain the same...
         table.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
             private int lastRow = -1;
 
@@ -489,15 +473,13 @@ public class CalendarPanel extends JPanel {
             }
         });
 
-        // Enhanced header styling
         JTableHeader header = table.getTableHeader();
         header.setFont(new Font("Product Sans", Font.BOLD, 14));
-        header.setBackground(new Color(240, 243, 247)); // Subtle header background
-        header.setForeground(new Color(52, 73, 94)); // Dark slate for header text
+        header.setBackground(new Color(240, 243, 247));
+        header.setForeground(new Color(52, 73, 94));
         header.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, new Color(52, 152, 219)));
         header.setPreferredSize(new Dimension(0, 55));
 
-        // Enhanced scroll pane
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.getViewport().setBackground(Color.WHITE);
@@ -510,11 +492,6 @@ public class CalendarPanel extends JPanel {
         JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         headerPanel.setBackground(Color.WHITE);
 
-        JLabel iconLabel = new JLabel("💼");
-        iconLabel.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 24));
-        iconLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        iconLabel.setForeground(new Color(28, 35, 51));
-
         JLabel titleLabel = new JLabel("Transaction History");
         titleLabel.setFont(new Font("Product Sans", Font.BOLD, 24));
         titleLabel.setForeground(new Color(28, 35, 51));
@@ -526,16 +503,13 @@ public class CalendarPanel extends JPanel {
         headerPanel.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 titleLabel.setForeground(new Color(82, 186, 255));
-                iconLabel.setForeground(new Color(82, 186, 255));
             }
 
             public void mouseExited(java.awt.event.MouseEvent evt) {
                 titleLabel.setForeground(new Color(28, 35, 51));
-                iconLabel.setForeground(new Color(28, 35, 51));
             }
         });
 
-        headerPanel.add(iconLabel);
         headerPanel.add(titleLabel);
 
         JSeparator separator = new JSeparator() {
@@ -561,5 +535,16 @@ public class CalendarPanel extends JPanel {
         tablePanel.setBorder(new EmptyBorder(10, 20, 20, 20));
 
         return tablePanel;
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            JFrame frame = new JFrame("Calendar Panel");
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.add(new CalendarPanel(new User("admin", "admin")));
+            frame.pack();
+            frame.setLocationRelativeTo(null);
+            frame.setVisible(true);
+        });
     }
 }

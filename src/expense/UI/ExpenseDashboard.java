@@ -6,18 +6,21 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.TableCellRenderer;
 
 import expense.module.Tabletransaction;
+import javafx.application.Platform;
+import javafx.scene.Scene;
+import javafx.scene.web.WebView;
+import javafx.embed.swing.JFXPanel;
 
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import java.awt.*;
-import java.awt.geom.Point2D;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Connection;
 import user.User;
 
+import org.json.JSONArray;
 import expense.Connection.connectdb;
 
 public class ExpenseDashboard extends JPanel {
@@ -92,7 +95,7 @@ public class ExpenseDashboard extends JPanel {
         centerSection.setBackground(new Color(240, 242, 245));
         centerSection.setBorder(new EmptyBorder(30, 0, 0, 0));
 
-        JPanel chartWrapper = createPanelWithShadow(createChartPanel());
+        JPanel chartWrapper = createPanelWithShadow(createTotPanel());
         JPanel tableWrapper = createPanelWithShadow(createTablePanel());
 
         centerSection.add(chartWrapper);
@@ -149,11 +152,9 @@ public class ExpenseDashboard extends JPanel {
                 Graphics2D g2d = (Graphics2D) g.create();
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-                // Draw shadow
                 g2d.setColor(new Color(28, 35, 51, 20));
                 g2d.fillRoundRect(5, 5, getWidth() - 10, getHeight() - 10, 15, 15);
 
-                // Draw panel background
                 g2d.setColor(Color.WHITE);
                 g2d.fillRoundRect(0, 0, getWidth() - 5, getHeight() - 5, 15, 15);
                 g2d.dispose();
@@ -166,7 +167,7 @@ public class ExpenseDashboard extends JPanel {
         return wrapper;
     }
 
-    private JPanel createChartPanel() {
+    private JPanel createTotPanel() {
         JPanel chartPanel = new JPanel(new BorderLayout());
         chartPanel.setBackground(Color.WHITE);
         chartPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
@@ -178,14 +179,9 @@ public class ExpenseDashboard extends JPanel {
         JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         headerPanel.setBackground(Color.WHITE);
 
-        JLabel iconLabel = new JLabel("📊");
-        iconLabel.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 24));
-        iconLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        iconLabel.setForeground(new Color(28, 35, 51)); // Darker blue matching sidebar
-
         JLabel titleLabel = new JLabel("Expense Categories");
         titleLabel.setFont(new Font("Inter", Font.BOLD, 24));
-        titleLabel.setForeground(new Color(28, 35, 51)); // Darker blue matching sidebar
+        titleLabel.setForeground(new Color(28, 35, 51));
         titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
         headerPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
@@ -193,17 +189,14 @@ public class ExpenseDashboard extends JPanel {
 
         headerPanel.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
-                titleLabel.setForeground(new Color(82, 186, 255)); // Lighter blue on hover
-                iconLabel.setForeground(new Color(82, 186, 255));
+                titleLabel.setForeground(new Color(82, 186, 255));
             }
 
             public void mouseExited(java.awt.event.MouseEvent evt) {
                 titleLabel.setForeground(new Color(28, 35, 51));
-                iconLabel.setForeground(new Color(28, 35, 51));
             }
         });
 
-        headerPanel.add(iconLabel);
         headerPanel.add(titleLabel);
 
         JSeparator separator = new JSeparator() {
@@ -224,146 +217,133 @@ public class ExpenseDashboard extends JPanel {
         titlePanel.add(separator, BorderLayout.SOUTH);
         titlePanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
 
-        JPanel chartContent = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                Graphics2D g2d = (Graphics2D) g;
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        JFXPanel chartContent = new JFXPanel();
 
-                Color[] colors = {
-                        new Color(255, 99, 132),
-                        new Color(54, 162, 235),
-                        new Color(255, 206, 86),
-                        new Color(75, 192, 192),
-                        new Color(153, 102, 255)
-                };
+        Platform.setImplicitExit(false);
+        Platform.runLater(() -> {
+            try {
+                WebView webView = new WebView();
+                StringBuilder htmlContent = new StringBuilder();
+                htmlContent.append("<!DOCTYPE html><html><head>");
+                htmlContent.append("<script src='https://cdn.jsdelivr.net/npm/chart.js'></script>");
+                htmlContent.append(
+                        "<style>body{display:flex;justify-content:center;align-items:center;height:100vh;margin:0;background:#fff;}</style>");
+                htmlContent.append("</head><body><canvas id='myChart'></canvas>");
+                htmlContent.append("<script>");
 
-                int[] values = { 30, 20, 15, 25, 10 };
-                String[] labels = { "Food", "Housing", "Transport", "Shopping", "Others" };
-                int total = 0;
-                for (int value : values)
-                    total += value;
+                JSONArray dates = new JSONArray();
+                JSONArray totalBalance = new JSONArray();
+                JSONArray incomeData = new JSONArray();
+                JSONArray expenseData = new JSONArray();
 
-                int padding = 25;
-                int diameter = (int) ((Math.min(getWidth(), getHeight() - 60) - padding * 2) * 0.8);
-                int centerX = getWidth() / 2;
-                // Adjusted centerY to move chart up by 30 pixels
-                int centerY = ((getHeight() - 120) / 2) - 30;
-                int x = centerX - diameter / 2;
-                int y = centerY - diameter / 2;
+                String sql = "SELECT DATE(date) as date, " +
+                        "SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) as income, " +
+                        "SUM(CASE WHEN amount < 0 THEN ABS(amount) ELSE 0 END) as expense " +
+                        "FROM expensetracker WHERE username = ? " +
+                        "GROUP BY DATE(date) ORDER BY date";
 
-                // Rest of the code remains the same
-                for (int i = 0; i < 5; i++) {
-                    g2d.setColor(new Color(0, 0, 0, 3));
-                    g2d.fillOval(x + i, y + i, diameter, diameter);
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                stmt.setString(1, user.getUsername());
+                ResultSet rs = stmt.executeQuery();
+
+                double runningTotal = 0;
+                while (rs.next()) {
+                    dates.put(rs.getString("date"));
+                    double income = rs.getDouble("income");
+                    double expense = rs.getDouble("expense");
+                    runningTotal += (income - expense);
+                    totalBalance.put(runningTotal);
+                    incomeData.put(income);
+                    expenseData.put(expense);
                 }
 
-                int startAngle = 0;
-                for (int i = 0; i < values.length; i++) {
-                    int arcAngle = (int) Math.round(360.0 * values[i] / total);
-                    Color baseColor = colors[i];
+                htmlContent.append("new Chart(document.getElementById('myChart'), {")
+                        .append("type: 'line',")
+                        .append("data: {")
+                        .append("labels: ").append(dates.toString()).append(",")
+                        .append("datasets: [{")
+                        .append("label: 'Total Balance',")
+                        .append("data: ").append(totalBalance.toString()).append(",")
+                        .append("fill: true,")
+                        .append("backgroundColor: 'rgba(75, 192, 192, 0.1)',")
+                        .append("borderColor: 'rgb(75, 192, 192)',")
+                        .append("tension: 0.4")
+                        .append("}, {")
+                        .append("label: 'Income',")
+                        .append("data: ").append(incomeData.toString()).append(",")
+                        .append("fill: true,")
+                        .append("backgroundColor: 'rgba(40, 167, 69, 0.1)',")
+                        .append("borderColor: 'rgb(40, 167, 69)',")
+                        .append("tension: 0.4")
+                        .append("}, {")
+                        .append("label: 'Expense',")
+                        .append("data: ").append(expenseData.toString()).append(",")
+                        .append("fill: true,")
+                        .append("backgroundColor: 'rgba(220, 53, 69, 0.1)',")
+                        .append("borderColor: 'rgb(220, 53, 69)',")
+                        .append("tension: 0.4")
+                        .append("}]")
+                        .append("},")
+                        .append("options: {")
+                        .append("responsive: true,")
+                        .append("maintainAspectRatio: false,")
+                        .append("plugins: {")
+                        .append("legend: {")
+                        .append("position: 'bottom',") // Changed from 'top' to 'bottom'
+                        .append("labels: {")
+                        .append("padding: 20,")
+                        .append("usePointStyle: true,")
+                        .append("font: {")
+                        .append("size: 14,")
+                        .append("family: 'Inter'")
+                        .append("}}")
+                        .append("},")
+                        .append("tooltip: {")
+                        .append("mode: 'index',")
+                        .append("intersect: false,")
+                        .append("padding: 12,")
+                        .append("backgroundColor: 'rgba(0,0,0,0.8)',")
+                        .append("titleFont: {size: 14},")
+                        .append("bodyFont: {size: 13},")
+                        .append("callbacks: {")
+                        .append("label: function(context) {")
+                        .append("let label = context.dataset.label || '';")
+                        .append("return label + ': $' + context.parsed.y.toFixed(2);")
+                        .append("}")
+                        .append("}")
+                        .append("}")
+                        .append("},")
+                        .append("layout: {") // Added layout configuration
+                        .append("padding: {")
+                        .append("bottom: 50") // Added padding at bottom for legend
+                        .append("}")
+                        .append("},")
+                        .append("scales: {")
+                        .append("y: {")
+                        .append("grid: {display: true, color: 'rgba(0,0,0,0.05)'},")
+                        .append("ticks: {")
+                        .append("font: {size: 12},")
+                        .append("callback: function(value) {")
+                        .append("return '$' + value.toFixed(2);")
+                        .append("}")
+                        .append("}")
+                        .append("},")
+                        .append("x: {")
+                        .append("grid: {display: false},")
+                        .append("ticks: {font: {size: 12}}")
+                        .append("}")
+                        .append("}")
+                        .append("}")
+                        .append("});")
+                        .append("</script></body></html>");
 
-                    Point2D center = new Point2D.Float(x + diameter / 2, y + diameter / 2);
-                    float radius = diameter / 2;
-                    float[] dist = { 0.0f, 0.7f, 1.0f };
-                    Color[] gradientColors = {
-                            baseColor.brighter(),
-                            baseColor,
-                            baseColor.darker()
-                    };
-                    RadialGradientPaint paint = new RadialGradientPaint(
-                            center, radius, dist, gradientColors);
-
-                    g2d.setPaint(paint);
-                    g2d.fillArc(x, y, diameter, diameter, startAngle, arcAngle);
-
-                    double midAngle = Math.toRadians(startAngle + arcAngle / 2);
-                    int labelRadius = diameter / 3;
-                    int labelX = centerX + (int) (labelRadius * Math.cos(midAngle));
-                    int labelY = centerY - (int) (labelRadius * Math.sin(midAngle));
-
-                    String percentage = String.format("%.1f%%", (values[i] * 100.0 / total));
-                    g2d.setFont(new Font("Inter", Font.BOLD, 14));
-                    FontMetrics fm = g2d.getFontMetrics();
-
-                    g2d.setColor(new Color(0, 0, 0, 60));
-                    g2d.drawString(percentage, labelX - fm.stringWidth(percentage) / 2 + 1,
-                            labelY + fm.getAscent() / 2 + 1);
-                    g2d.setColor(Color.WHITE);
-                    g2d.drawString(percentage, labelX - fm.stringWidth(percentage) / 2,
-                            labelY + fm.getAscent() / 2);
-
-                    startAngle += arcAngle;
-                }
-
-                int legendY = y + diameter + 15;
-                g2d.setFont(new Font("Inter", Font.PLAIN, 12));
-
-                int itemWidth = 100;
-                int itemHeight = 20;
-                int itemsPerRow = 3;
-                int horizontalGap = 15;
-
-                for (int i = 0; i < values.length; i++) {
-                    int row = i / itemsPerRow;
-                    int col = i % itemsPerRow;
-
-                    int startX = centerX - ((itemsPerRow * itemWidth + (itemsPerRow - 1) * horizontalGap) / 2);
-                    int legendX = startX + (col * (itemWidth + horizontalGap));
-                    int itemY = legendY + (row * (itemHeight + 5));
-
-                    g2d.setColor(new Color(0, 0, 0, 20));
-                    g2d.fillRoundRect(legendX + 1, itemY + 1, 16, 16, 6, 6);
-                    g2d.setColor(colors[i]);
-                    g2d.fillRoundRect(legendX, itemY, 16, 16, 6, 6);
-
-                    g2d.setColor(new Color(33, 37, 41));
-                    g2d.drawString(labels[i], legendX + 25, itemY + 12);
-                }
-            }
-        };
-        chartContent.addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override
-            public void mouseClicked(java.awt.event.MouseEvent e) {
-                int x = e.getX();
-                int y = e.getY();
-                int centerX = chartContent.getWidth() / 2;
-                int centerY = ((chartContent.getHeight() - 120) / 2) - 30;
-                int diameter = (int) ((Math.min(chartContent.getWidth(), chartContent.getHeight() - 60) - 25 * 2)
-                        * 0.8);
-                int radius = diameter / 2;
-
-                double dx = x - centerX;
-                double dy = y - centerY;
-                double distance = Math.sqrt(dx * dx + dy * dy);
-
-                if (distance <= radius) {
-                    double angle = Math.toDegrees(Math.atan2(dy, dx)) + 360;
-                    angle = (angle + 90) % 360;
-
-                    int startAngle = 0;
-                    int[] values = { 30, 20, 15, 25, 10 };
-                    String[] labels = { "Food", "Housing", "Transport", "Shopping", "Others" };
-                    int total = 0;
-                    for (int value : values)
-                        total += value;
-
-                    for (int i = 0; i < values.length; i++) {
-                        int arcAngle = (int) Math.round(360.0 * values[i] / total);
-                        if (angle >= startAngle && angle < startAngle + arcAngle) {
-                            JOptionPane.showMessageDialog(chartContent,
-                                    "Category: " + labels[i] + "\nValue: " + values[i] + "%");
-                            break;
-                        }
-                        startAngle += arcAngle;
-                    }
-                }
+                webView.getEngine().loadContent(htmlContent.toString());
+                Scene scene = new Scene(webView);
+                chartContent.setScene(scene);
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
         });
-        chartContent.setBackground(Color.WHITE);
-        chartContent.setPreferredSize(new Dimension(0, 350));
 
         chartPanel.add(titlePanel, BorderLayout.NORTH);
         chartPanel.add(chartContent, BorderLayout.CENTER);
@@ -482,8 +462,6 @@ public class ExpenseDashboard extends JPanel {
                 return String.class;
             }
         };
-
-        // Rest of the code remains the same...
         table.setRowHeight(60);
         table.setSelectionBackground(new Color(82, 186, 255, 15));
         table.setSelectionForeground(new Color(28, 35, 51));
@@ -492,7 +470,6 @@ public class ExpenseDashboard extends JPanel {
         table.setFillsViewportHeight(true);
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-        // Mouse listeners remain the same...
         table.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
             private int lastRow = -1;
 
@@ -537,11 +514,6 @@ public class ExpenseDashboard extends JPanel {
         JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         headerPanel.setBackground(Color.WHITE);
 
-        JLabel iconLabel = new JLabel("💼");
-        iconLabel.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 24));
-        iconLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        iconLabel.setForeground(new Color(28, 35, 51));
-
         JLabel titleLabel = new JLabel("Transaction History");
         titleLabel.setFont(new Font("Product Sans", Font.BOLD, 24));
         titleLabel.setForeground(new Color(28, 35, 51));
@@ -553,16 +525,12 @@ public class ExpenseDashboard extends JPanel {
         headerPanel.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 titleLabel.setForeground(new Color(82, 186, 255));
-                iconLabel.setForeground(new Color(82, 186, 255));
             }
 
             public void mouseExited(java.awt.event.MouseEvent evt) {
                 titleLabel.setForeground(new Color(28, 35, 51));
-                iconLabel.setForeground(new Color(28, 35, 51));
             }
         });
-
-        headerPanel.add(iconLabel);
         headerPanel.add(titleLabel);
 
         JSeparator separator = new JSeparator() {
