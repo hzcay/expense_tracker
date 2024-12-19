@@ -3,8 +3,8 @@ package expense.UI;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
-import user.LoginPage;
-import user.User;
+import user.Login_Page.LoginPage;
+import user.user_class.User;
 
 import java.awt.*;
 

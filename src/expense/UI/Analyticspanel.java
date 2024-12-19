@@ -10,13 +10,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Connection;
-import user.User;
 
 import expense.Connection.connectdb;
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
 import javafx.scene.web.WebView;
+import user.user_class.User;
 
 public class Analyticspanel extends JPanel {
     private Connection conn = new connectdb().getconnectdb();

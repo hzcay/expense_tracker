@@ -4,7 +4,7 @@ import com.formdev.flatlaf.FlatLightLaf;
 
 import expense.Connection.connectdb;
 import expense.module.Tabletransaction;
-import user.User;
+import user.user_class.User;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

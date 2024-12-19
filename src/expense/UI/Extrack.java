@@ -6,6 +6,7 @@ import javax.swing.table.TableCellRenderer;
 
 import expense.module.Tabletransaction;
 import expense.module.transaction;
+import user.user_class.User;
 
 import com.formdev.flatlaf.FlatLightLaf;
 import com.toedter.calendar.JCalendar;
@@ -13,8 +14,6 @@ import java.util.Date;
 
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
-
-import user.User;
 
 import java.awt.*;
 import java.sql.Connection;

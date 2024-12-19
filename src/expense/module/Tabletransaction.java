@@ -3,7 +3,7 @@ package expense.module;
 import java.sql.*;
 import java.util.ArrayList;
 
-import user.User;
+import user.user_class.User;
 
 public class Tabletransaction {
     private final Connection conn;

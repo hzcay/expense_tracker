@@ -9,6 +9,7 @@ import expense.module.Tabletransaction;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.web.WebView;
+import user.user_class.User;
 import javafx.embed.swing.JFXPanel;
 
 import javax.swing.table.DefaultTableCellRenderer;
@@ -18,7 +19,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Connection;
-import user.User;
 
 import org.json.JSONArray;
 import expense.Connection.connectdb;
