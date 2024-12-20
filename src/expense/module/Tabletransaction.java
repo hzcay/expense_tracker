@@ -15,7 +15,6 @@ public class Tabletransaction {
     private static final String GET_MAX_ID_SQL = "SELECT MAX(id) FROM expensetracker";
     private static final String ADD_TRANSACTION_SQL = "INSERT INTO expensetracker (Date, Description, Category_id, Amount, username) VALUES (?, ?, ?, ?, ?)";
     private static final String DELETE_TRANSACTION_SQL = "DELETE FROM expensetracker WHERE id = ?";
-    private static final String DELETE_TRANSACTIONS_BY_COLUMN_SQL = "DELETE FROM expensetracker WHERE %s = ? AND username = ?";
     private static final String GET_TRANSACTION_SQL = "SELECT * FROM expensetracker WHERE id = ? AND username = ?";
     private static final String UPDATE_TRANSACTION_SQL = "UPDATE expensetracker SET Date = ?, Description = ?, Category_id = ?, Amount = ? WHERE ID = ? AND username = ?";
     private static final String GET_TRANSACTIONS_BY_DATE_SQL = "SELECT * FROM expensetracker WHERE Username = ? AND Date = ?";
@@ -117,17 +116,6 @@ public class Tabletransaction {
     public void deleteTransaction(int id) {
         try (PreparedStatement stmt = conn.prepareStatement(DELETE_TRANSACTION_SQL)) {
             stmt.setInt(1, id);
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void deleteTransactionByColumn(String columnName, String value) {
-        String sql = String.format(DELETE_TRANSACTIONS_BY_COLUMN_SQL, columnName);
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, value);
-            stmt.setString(2, user.getUsername());
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
