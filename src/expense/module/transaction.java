@@ -1,6 +1,9 @@
 package expense.module;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class transaction {
     private int id;
@@ -9,6 +12,13 @@ public class transaction {
     private String category;
     private double amount;
     private String type;
+
+    private static final String OTHER_CATEGORY_INCOME = "IC_0";
+    private static final String OTHER_CATEGORY_EXPENSE = "EX_0";
+    private static final String INCOME_PREFIX = "IC_";
+    private static final String EXPENSE_PREFIX = "EX_";
+    private static final String OTHER_CATEGORY_NAME = "📦 Others";
+    private static final String CATEGORY_SQL = "SELECT * FROM category WHERE name = ?";
 
     public transaction(int id, String date, String description, String category, double amount, String type) {
         this.id = id;
@@ -55,25 +65,8 @@ public class transaction {
         this.description = description;
     }
 
-    public void setCategory(String category, Connection conn) {
-        try {
-            if (category.equals("📦 Others")) {
-                this.category = (getType().equals("Income")) ? "IC_0" : "EX_0";
-            } else {
-                String sql = "SELECT * FROM category WHERE name = ?";
-                PreparedStatement stmt = conn.prepareStatement(sql);
-                stmt.setString(1, category);
-                ResultSet rs = stmt.executeQuery();
-                if (rs.next()) {
-                    this.category = rs.getString("category_id");
-                } else {
-                    String prefix = (getType().equals("Income")) ? "IC_" : "EX_";
-                    this.category = prefix + "N/A";
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     public void setAmount(double amount) {
@@ -82,6 +75,31 @@ public class transaction {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public void setCategory(String categoryName, Connection conn) {
+        try {
+            if (categoryName.equals(OTHER_CATEGORY_NAME)) {
+                this.category = (getType().equals("Income")) ? OTHER_CATEGORY_INCOME : OTHER_CATEGORY_EXPENSE;
+            } else {
+                this.category = fetchCategoryId(categoryName, conn);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private String fetchCategoryId(String categoryName, Connection conn) throws SQLException {
+        String sql = CATEGORY_SQL;
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, categoryName);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("category_id");
+                }
+            }
+        }
+        return (getType().equals("Income")) ? INCOME_PREFIX + "N/A" : EXPENSE_PREFIX + "N/A";
     }
 
 }

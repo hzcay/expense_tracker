@@ -1,13 +1,29 @@
 package expense.module;
 
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-
+import java.util.Locale;
 import user.user_class.User;
 
 public class Tabletransaction {
     private final Connection conn;
     private final User user;
+
+    private static final String GET_TRANSACTIONS_SQL = "SELECT * FROM expensetracker WHERE Username = ?";
+    private static final String GET_CATEGORY_SQL = "SELECT * FROM category WHERE category_id = ?";
+    private static final String GET_MAX_ID_SQL = "SELECT MAX(id) FROM expensetracker";
+    private static final String ADD_TRANSACTION_SQL = "INSERT INTO expensetracker (Date, Description, Category_id, Amount, username) VALUES (?, ?, ?, ?, ?)";
+    private static final String DELETE_TRANSACTION_SQL = "DELETE FROM expensetracker WHERE id = ?";
+    private static final String DELETE_TRANSACTIONS_BY_COLUMN_SQL = "DELETE FROM expensetracker WHERE %s = ? AND username = ?";
+    private static final String GET_TRANSACTION_SQL = "SELECT * FROM expensetracker WHERE id = ? AND username = ?";
+    private static final String UPDATE_TRANSACTION_SQL = "UPDATE expensetracker SET Date = ?, Description = ?, Category_id = ?, Amount = ? WHERE ID = ? AND username = ?";
+    private static final String GET_TRANSACTIONS_BY_DATE_SQL = "SELECT * FROM expensetracker WHERE Username = ? AND Date = ?";
+
+    private static final String DATE_FORMAT = "dd/MM/yyyy";
+    private static final String EXPENSE_PREFIX = "EX";
+    private static final String INCOME_PREFIX = "IN";
+    private static final String OTHER_CATEGORY = "N/A";
 
     public Tabletransaction(Connection conn, User user) {
         this.conn = conn;
@@ -16,91 +32,71 @@ public class Tabletransaction {
 
     public Object[][] getTransactions() {
         ArrayList<Object[]> transactions = new ArrayList<>();
-        String sql = "SELECT * FROM expensetracker WHERE Username = ?";
-
-        // Di chuyển return xuống cuối phương thức
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (PreparedStatement stmt = conn.prepareStatement(GET_TRANSACTIONS_SQL)) {
             stmt.setString(1, user.getUsername());
-
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    Object[] row = new Object[5];
-                    row[0] = rs.getString("category_id");
-                    row[1] = rs.getString("description");
-                    row[2] = new java.text.SimpleDateFormat("dd/MM/yyyy").format(rs.getDate("Date"));
-                    row[3] = rs.getDouble("Amount");
-                    row[4] = rs.getInt("ID");
-
-                    String category = rs.getString("category_id");
-                    row[0] = setCategory(category);
-
+                    Object[] row = createTransactionRow(rs);
                     transactions.add(row);
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
-        // Chuyển ArrayList thành Object[][]
-        return transactions.toArray(new Object[transactions.size()][]);
+        return transactions.toArray(new Object[0][]);
     }
 
-    private String determineTransactionType(String category) {
-        if (category.startsWith("EX"))
+    private Object[] createTransactionRow(ResultSet rs) throws SQLException {
+        String categoryId = rs.getString("category_id");
+        String categoryName = getCategoryName(categoryId);
+        SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT, Locale.getDefault());
+        return new Object[] {
+                categoryName,
+                rs.getString("description"),
+                dateFormat.format(rs.getDate("Date")),
+                rs.getDouble("Amount"),
+                rs.getInt("id")
+        };
+    }
+
+    private String determineTransactionType(String categoryId) {
+        if (categoryId.startsWith(EXPENSE_PREFIX))
             return "Expense";
-        if (category.startsWith("IN"))
+        if (categoryId.startsWith(INCOME_PREFIX))
             return "Income";
         return "Category";
     }
 
-    public String setCategory(String category) {
-        try {
-
-            String sql = "SELECT * FROM category WHERE category_id = ?";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setString(1, category);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                return rs.getString("name");
-            } else {
-                return "N/A";
+    private String getCategoryName(String categoryId) {
+        try (PreparedStatement stmt = conn.prepareStatement(GET_CATEGORY_SQL)) {
+            stmt.setString(1, categoryId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("name");
+                }
             }
-        } catch (Exception e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
-        return null;
+        return OTHER_CATEGORY;
     }
 
     public int getNextAvailableId() {
-
         int maxId = 0;
-
-        try {
-            String sql = "SELECT MAX(id) FROM expensetracker";
-
-            PreparedStatement stmt = conn.prepareStatement(sql);
-
-            ResultSet rs = stmt.executeQuery();
-
-            if (rs.next()) {
-
-                maxId = rs.getInt(1);
-
+        try (PreparedStatement stmt = conn.prepareStatement(GET_MAX_ID_SQL)) {
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    maxId = rs.getInt(1);
+                }
             }
-
         } catch (SQLException e) {
-
             e.printStackTrace();
-
         }
-
         return maxId + 1;
     }
 
     public void addTransaction(transaction transaction) {
-        try {
-            String sql = "INSERT INTO expensetracker (Date, Description, Category_id, Amount, username) VALUES (?, ?, ?, ?, ?)";
-            PreparedStatement stmt = conn.prepareStatement(sql);
+        try (PreparedStatement stmt = conn.prepareStatement(ADD_TRANSACTION_SQL)) {
             double amount = transaction.getAmount();
             if (determineTransactionType(transaction.getCategory()).equals("Expense")) {
                 amount = -1 * Math.abs(amount);
@@ -113,27 +109,23 @@ public class Tabletransaction {
             stmt.setDouble(4, amount);
             stmt.setString(5, user.getUsername());
             stmt.executeUpdate();
-
-        } catch (Exception e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
     public void deleteTransaction(int id) {
-        try {
-            String sql = "DELETE FROM expensetracker WHERE id = ?";
-            PreparedStatement stmt = conn.prepareStatement(sql);
+        try (PreparedStatement stmt = conn.prepareStatement(DELETE_TRANSACTION_SQL)) {
             stmt.setInt(1, id);
             stmt.executeUpdate();
-        } catch (Exception e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
     public void deleteTransactionByColumn(String columnName, String value) {
-        try {
-            String sql = "DELETE FROM expensetracker WHERE " + columnName + " = ? AND username = ?";
-            PreparedStatement stmt = conn.prepareStatement(sql);
+        String sql = String.format(DELETE_TRANSACTIONS_BY_COLUMN_SQL, columnName);
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, value);
             stmt.setString(2, user.getUsername());
             stmt.executeUpdate();
@@ -144,16 +136,15 @@ public class Tabletransaction {
 
     public transaction getTransaction(int id) {
         transaction transaction = null;
-        try {
-            String sql = "SELECT * FROM expensetracker WHERE id = ? AND username = ?";
-            PreparedStatement stmt = conn.prepareStatement(sql);
+        try (PreparedStatement stmt = conn.prepareStatement(GET_TRANSACTION_SQL)) {
             stmt.setInt(1, id);
             stmt.setString(2, user.getUsername());
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                transaction = new transaction(rs.getInt("ID"), rs.getString("Date"), rs.getString("Description"),
-                        rs.getString("Category_id"), rs.getDouble("Amount"),
-                        determineTransactionType(rs.getString("Category_id")));
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    transaction = new transaction(rs.getInt("id"), rs.getString("Date"), rs.getString("Description"),
+                            rs.getString("Category_id"), rs.getDouble("Amount"),
+                            determineTransactionType(rs.getString("Category_id")));
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -162,9 +153,7 @@ public class Tabletransaction {
     }
 
     public void updateTransaction(transaction transaction) {
-        try {
-            String sql = "UPDATE expensetracker SET Date = ?, Description = ?, Category_id = ?, Amount = ? WHERE ID = ? AND username = ?";
-            PreparedStatement stmt = conn.prepareStatement(sql);
+        try (PreparedStatement stmt = conn.prepareStatement(UPDATE_TRANSACTION_SQL)) {
             stmt.setString(1, transaction.getDate());
             stmt.setString(2, transaction.getDescription());
             stmt.setString(3, transaction.getCategory());
@@ -178,32 +167,21 @@ public class Tabletransaction {
     }
 
     public Object[][] getTransactionwithDATE(String date) {
-        ArrayList<Object[]> transactionList = new ArrayList<>();
-        String sqlQuery = "SELECT * FROM expensetracker WHERE Username = ? AND Date = ?";
-
-        try (PreparedStatement stmt = conn.prepareStatement(sqlQuery)) {
+        ArrayList<Object[]> transactions = new ArrayList<>();
+        try (PreparedStatement stmt = conn.prepareStatement(GET_TRANSACTIONS_BY_DATE_SQL)) {
             stmt.setString(1, user.getUsername());
             stmt.setString(2, date);
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    Object[] row = {
-                            setCategory(rs.getString("category_id")), // Retrieve category name or format
-                            rs.getString("description"),
-                            new java.text.SimpleDateFormat("dd/MM/yyyy").format(rs.getDate("Date")), // Format Date
-                            rs.getDouble("Amount"), // Amount column
-                            rs.getInt("ID") // Transaction ID
-                    };
-                    transactionList.add(row);
+                    Object[] row = createTransactionRow(rs);
+                    transactions.add(row);
                 }
             }
         } catch (SQLException e) {
-            System.err.println("Error fetching transactions by date: " + e.getMessage());
             e.printStackTrace();
-            return new Object[0][]; // Return empty array on error
+            return new Object[0][];
         }
-
-        // Convert ArrayList to Object[][]
-        return transactionList.toArray(new Object[transactionList.size()][]);
+        return transactions.toArray(new Object[0][]);
     }
 }
