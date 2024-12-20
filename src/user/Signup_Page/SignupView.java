@@ -16,7 +16,6 @@ public class SignupView extends JPanel {
         setOpaque(false);
         setLayout(null);
 
-        // Label and input components
         JLabel heading = createLabel("CREATE AN ACCOUNT", SignupConstants.HEADING_FONT, SignupConstants.HEADING_COLOR,
                 SignupConstants.HEADING_X, SignupConstants.HEADING_Y, SignupConstants.HEADING_WIDTH,
                 SignupConstants.HEADING_HEIGHT);
@@ -89,7 +88,6 @@ public class SignupView extends JPanel {
         add(loginButton);
     }
 
-    // Getter methods for the components
     public JTextField getUsernameEntry() {
         return usernameEntry;
     }
@@ -183,12 +181,12 @@ public class SignupView extends JPanel {
         SwingUtilities.invokeLater(() -> {
             JFrame frame = new JFrame("Sign Up");
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.setSize(800, 600); // Adjust size as needed
+            frame.setSize(800, 600);
 
             SignupView signupPage = new SignupView();
             frame.add(signupPage);
 
-            frame.setLocationRelativeTo(null); // Center on screen
+            frame.setLocationRelativeTo(null);
             frame.setVisible(true);
         });
     }

@@ -13,6 +13,7 @@ import java.awt.image.BufferedImage;
 
 public class LoginPage extends JFrame {
     public LoginPage() {
+
         try {
             UIManager.setLookAndFeel(new FlatLightLaf());
         } catch (Exception e) {
@@ -32,7 +33,6 @@ public class LoginPage extends JFrame {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         try {
             BufferedImage bgImage = ImageIO.read(new File(LoginConstants.BACKGROUND_PATH));
             Image scaledImage = bgImage.getScaledInstance(LoginConstants.FRAME_WIDTH, LoginConstants.FRAME_HEIGHT,

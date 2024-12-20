@@ -413,9 +413,9 @@ public class Analyticspanel extends JPanel {
                 .append("}")
                 .append("}")
                 .append("},")
-                .append("layout: {") // Added layout configuration
+                .append("layout: {")
                 .append("padding: {")
-                .append("bottom: 50") // Added padding at bottom for legend
+                .append("bottom: 50")
                 .append("}")
                 .append("},")
                 .append("scales: {")
@@ -483,7 +483,7 @@ public class Analyticspanel extends JPanel {
         separator.setPreferredSize(new Dimension(0, 2));
         titlePanel.add(headerPanel, BorderLayout.NORTH);
         titlePanel.add(separator, BorderLayout.SOUTH);
-        titlePanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 0)); // Reduced bottom padding
+        titlePanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 0));
 
         panel.add(titlePanel, BorderLayout.NORTH);
         return panel;

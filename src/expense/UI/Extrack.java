@@ -324,23 +324,18 @@ public class Extrack extends JPanel {
         fieldsPanel.setLayout(new GridLayout(5, 1, 0, 20));
         fieldsPanel.setBackground(INPUT_BACKGROUND_COLOR);
 
-        // Transaction type field
         JPanel typePanel = createTypeField(isEditMode ? transaction.getAmount() >= 0 : true);
         fieldsPanel.add(typePanel);
 
-        // Category field
         JPanel categoryPanel = createCategoryField(typePanel, transaction);
         fieldsPanel.add(categoryPanel);
 
-        // Description Field
         JPanel descriptionPanel = createDescriptionField(isEditMode ? transaction.getDescription() : "");
         fieldsPanel.add(descriptionPanel);
 
-        // Date Field
         JPanel datePanel = createDateField(isEditMode ? transaction.getDate() : null);
         fieldsPanel.add(datePanel);
 
-        // Amount Field
         JPanel amountPanel = createAmountField(
                 isEditMode ? String.format("%.2f", Math.abs(transaction.getAmount())) : "");
         fieldsPanel.add(amountPanel);

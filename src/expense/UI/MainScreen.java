@@ -75,7 +75,7 @@ public class MainScreen extends JFrame {
         contentPanel.setLayout(new BorderLayout());
         contentPanel.setBackground(CONTENT_BACKGROUND_COLOR);
         add(contentPanel, BorderLayout.CENTER);
-        showPanel(new ExpenseDashboard(currentUser)); // Default view
+        showPanel(new ExpenseDashboard(currentUser));
     }
 
     private JPanel createSidebar() {
@@ -91,7 +91,6 @@ public class MainScreen extends JFrame {
 
         JButton[] menuButtons = createMenuButtons(sidebar);
 
-        // Set initial active button
         activeButton = menuButtons[0];
         activeButton.setBackground(BUTTON_COLOR_ACTIVE);
         activeButton.setForeground(Color.WHITE);
@@ -168,37 +167,33 @@ public class MainScreen extends JFrame {
 
     private JButton createLogoutButton() {
         JButton logoutButton = createModernMenuButton(LOGOUT_TEXT);
-        logoutButton.removeActionListener(logoutButton.getActionListeners()[0]); // Remove the color change listener
+        logoutButton.removeActionListener(logoutButton.getActionListeners()[0]);
 
-        // Add logout functionality with custom styled dialog
         logoutButton.addActionListener(_ -> confirmLogout());
         return logoutButton;
     }
 
     private void confirmLogout() {
-        // Create custom dialog styling
+
         JOptionPane pane = new JOptionPane(
                 CONFIRM_LOGOUT_MESSAGE,
                 JOptionPane.QUESTION_MESSAGE,
                 JOptionPane.YES_NO_OPTION,
                 null,
                 LOGOUT_OPTIONS,
-                LOGOUT_OPTIONS[LOGOUT_DEFAULT_OPTION] // Default to "No"
-        );
+                LOGOUT_OPTIONS[LOGOUT_DEFAULT_OPTION]);
 
-        // Style the dialog
         pane.setBackground(CONTENT_BACKGROUND_COLOR);
         UIManager.put("OptionPane.messageFont", new Font("Product Sans", Font.PLAIN, 16));
         UIManager.put("Button.font", new Font("Product Sans", Font.BOLD, 14));
 
-        // Create and show dialog
         JDialog dialog = pane.createDialog(this, LOGOUT_DIALOG_TITLE);
         dialog.setAlwaysOnTop(true);
         dialog.setModal(true);
         dialog.setVisible(true);
 
         Object selectedValue = pane.getValue();
-        if (selectedValue != null && selectedValue.equals(LOGOUT_OPTIONS[0])) { // "Yes" selected
+        if (selectedValue != null && selectedValue.equals(LOGOUT_OPTIONS[0])) {
             logout();
         }
     }
@@ -217,13 +212,13 @@ public class MainScreen extends JFrame {
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
                 if (this == activeButton) {
-                    g2d.setColor(BUTTON_COLOR_ACTIVE); // Active button color
+                    g2d.setColor(BUTTON_COLOR_ACTIVE);
                 } else if (getModel().isPressed()) {
-                    g2d.setColor(SIDEBAR_COLOR); // Changed to match sidebar
+                    g2d.setColor(SIDEBAR_COLOR);
                 } else if (getModel().isRollover()) {
-                    g2d.setColor(SIDEBAR_COLOR); // Changed to match sidebar
+                    g2d.setColor(SIDEBAR_COLOR);
                 } else {
-                    g2d.setColor(SIDEBAR_COLOR); // Changed to match sidebar
+                    g2d.setColor(SIDEBAR_COLOR);
                 }
 
                 g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);

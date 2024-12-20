@@ -226,24 +226,21 @@ public class ExpenseDashboard extends JPanel {
                 Component comp = super.prepareRenderer(renderer, row, column);
                 JComponent jc = (JComponent) comp;
 
-                // Center align all cells
                 if (comp instanceof JLabel) {
                     ((JLabel) comp).setHorizontalAlignment(SwingConstants.CENTER);
                 }
 
-                // Enhanced row colors with subtle gradient
                 if (!isRowSelected(row)) {
                     Color baseColor = row % 2 == 0 ? TABLE_CELL_COLOR : Color.WHITE;
                     comp.setBackground(baseColor);
                 }
 
-                // Enhanced styling for different columns
                 switch (column) {
-                    case 0: // Category
+                    case 0:
                         comp.setFont(new Font("Inter", Font.BOLD, 14));
                         comp.setForeground(TEXT_COLOR_PRIMARY);
                         break;
-                    case 3: // Amount
+                    case 3:
                         comp.setFont(new Font("Inter", Font.BOLD, 14));
                         Object value = getValueAt(row, column);
                         double amount = 0;
@@ -271,7 +268,6 @@ public class ExpenseDashboard extends JPanel {
                         break;
                 }
 
-                // Enhanced selection styling
                 if (isRowSelected(row)) {
                     comp.setBackground(TABLE_SELECTION_COLOR);
                     comp.setForeground(TABLE_SELECTION_FOREGROUND_COLOR);
@@ -352,8 +348,8 @@ public class ExpenseDashboard extends JPanel {
 
         JTableHeader header = table.getTableHeader();
         header.setFont(new Font("Product Sans", Font.BOLD, 14));
-        header.setBackground(new Color(240, 243, 247)); // Subtle header background
-        header.setForeground(new Color(52, 73, 94)); // Dark slate for header text
+        header.setBackground(new Color(240, 243, 247));
+        header.setForeground(new Color(52, 73, 94));
         header.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, new Color(52, 152, 219)));
         header.setPreferredSize(new Dimension(0, 55));
 
@@ -451,9 +447,9 @@ public class ExpenseDashboard extends JPanel {
                 .append("}")
                 .append("}")
                 .append("},")
-                .append("layout: {") // Added layout configuration
+                .append("layout: {")
                 .append("padding: {")
-                .append("bottom: 50") // Added padding at bottom for legend
+                .append("bottom: 50")
                 .append("}")
                 .append("},")
                 .append("scales: {")
@@ -553,7 +549,6 @@ public class ExpenseDashboard extends JPanel {
                 createEmptyBorder());
     }
 
-    // RoundedBorder class for rounded edges
     class RoundedBorder extends AbstractBorder {
         private int radius;
 
