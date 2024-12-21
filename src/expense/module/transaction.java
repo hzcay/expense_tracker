@@ -29,6 +29,10 @@ public class transaction {
         this.type = type;
     }
 
+    public transaction(String category) {
+        this.category = category;
+    }
+
     public int getId() {
         return id;
     }

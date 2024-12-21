@@ -87,18 +87,21 @@ public class Extrack extends JPanel {
     }
 
     private double getIncomeBalance() {
+        // tính tổng số tiền thu lọc theo username với điều kiện số tiền > 0
         return executeSumQuery(GET_INCOME_SQL);
     }
 
     private double getExpenseBalance() {
+        // tính tổng số tiền chi tiêu lọc theo username với điều kiện số tiền < 0
         return executeSumQuery(GET_EXPENSE_SQL);
     }
 
-    private double executeSumQuery(String sql) {
+    private double executeSumQuery(String sql) { // thực thi câu lệnh sql
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, user.getUsername());
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
+                    // trả về giá trị của cột total = Sum(amount) or ABS(Sum(amount))
                     return rs.getDouble("total");
                 }
             }
@@ -108,6 +111,7 @@ public class Extrack extends JPanel {
         return 0.0;
     }
 
+    // panel chính chứa các phần tử giao diện giao dịch
     private JPanel createMainContent() {
         JPanel mainContent = new JPanel(new BorderLayout());
         mainContent.setBackground(BACKGROUND_COLOR);
@@ -125,8 +129,9 @@ public class Extrack extends JPanel {
     private JPanel createTopSection() {
         JPanel topSection = new JPanel(new GridLayout(1, 3, BORDER_SPACING, 0));
         topSection.setBackground(BACKGROUND_COLOR);
-        double totalBalance = getIncomeBalance() - getExpenseBalance();
+        double totalBalance = getIncomeBalance() - getExpenseBalance(); // tổng số tiền = số tiền thu - số tiền chi
 
+        // tạo 3 card hiển thị thông tin số tiền thu, số tiền chi, tổng số tiền
         topSection.add(createGradientCard(BALANCE_TITLE, String.format(AMOUNT_FORMAT, totalBalance),
                 new Color(37, 47, 63), new Color(52, 63, 83)));
         topSection.add(createGradientCard(EXPENSE_TITLE, String.format(AMOUNT_FORMAT, getExpenseBalance()),
@@ -602,6 +607,12 @@ public class Extrack extends JPanel {
         double amount;
         try {
             amount = Double.parseDouble(((JTextField) amountPanel.getComponent(1)).getText());
+            if (amount == 0 || amount < 0) {
+                JOptionPane.showMessageDialog(parentPanel, INVALID_AMOUNT_MESSAGE, "Invalid Input",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
             if (type.equals("Expense")) {
                 amount = -amount;
             }
@@ -731,9 +742,9 @@ public class Extrack extends JPanel {
 
     private JTable getTable() {
         if (table == null) {
-            String[] columns = { "Category", "Description", "Date", "Amount" };
-            tb = new Tabletransaction(conn, user);
-            Object[][] data = tb.getTransactions();
+            String[] columns = { "Category", "Description", "Date", "Amount" }; // các cột của bảng
+            tb = new Tabletransaction(conn, user); // tạo bảng
+            Object[][] data = tb.getTransactions(); // lấy dữ liệu từ bảng expensetracker
             table = new JTable(data, columns);
         }
         return table;

@@ -31,7 +31,8 @@ public class MainScreen extends JFrame {
             "Dashboard",
             "Expenses",
             "Analytics",
-            "Calendar"
+            "Calendar",
+            "Categories",
     };
 
     private static final String CONFIRM_LOGOUT_MESSAGE = "Are you sure you want to logout?";
@@ -150,6 +151,9 @@ public class MainScreen extends JFrame {
                 break;
             case 3:
                 panel = new CalendarPanel(currentUser);
+                break;
+            case 4:
+                panel = new CategoryPanel(currentUser);
                 break;
             default:
                 panel = new JPanel();

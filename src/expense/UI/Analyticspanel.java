@@ -285,7 +285,10 @@ public class Analyticspanel extends JPanel {
         htmlContent.append("'rgba(255, 206, 86, 0.8)','rgba(75, 192, 192, 0.8)',");
         htmlContent.append("'rgba(153, 102, 255, 0.8)','rgba(255, 159, 64, 0.8)',");
         htmlContent.append("'rgba(69, 183, 209, 0.8)','rgba(150, 201, 61, 0.8)',");
-        htmlContent.append("'rgba(255, 160, 122, 0.8)','rgba(221, 160, 221, 0.8)'");
+        htmlContent.append("'rgba(255, 160, 122, 0.8)','rgba(221, 160, 221, 0.8)',");
+        htmlContent.append("'rgba(106, 90, 205, 0.8)','rgba(64, 224, 208, 0.8)',");
+        htmlContent.append("'rgba(255, 105, 180, 0.8)','rgba(154, 205, 50, 0.8)',");
+        htmlContent.append("'rgba(218, 112, 214, 0.8)','rgba(30, 144, 255, 0.8)'");
         htmlContent.append("],");
         htmlContent.append("borderWidth: 2,");
         htmlContent.append("borderColor: '#ffffff',");

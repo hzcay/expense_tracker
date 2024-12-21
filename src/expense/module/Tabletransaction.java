@@ -18,6 +18,7 @@ public class Tabletransaction {
     private static final String GET_TRANSACTION_SQL = "SELECT * FROM expensetracker WHERE id = ? AND username = ?";
     private static final String UPDATE_TRANSACTION_SQL = "UPDATE expensetracker SET Date = ?, Description = ?, Category_id = ?, Amount = ? WHERE ID = ? AND username = ?";
     private static final String GET_TRANSACTIONS_BY_DATE_SQL = "SELECT * FROM expensetracker WHERE Username = ? AND Date = ?";
+    private static final String GET_TRANSACTIONS_BY_CATEGORY_SQL = "SELECT * FROM expensetracker WHERE Username = ? AND Category_id = ?";
 
     private static final String DATE_FORMAT = "dd/MM/yyyy";
     private static final String EXPENSE_PREFIX = "EX";
@@ -30,31 +31,31 @@ public class Tabletransaction {
     }
 
     public Object[][] getTransactions() {
-        ArrayList<Object[]> transactions = new ArrayList<>();
+        ArrayList<Object[]> transactions = new ArrayList<>(); // khái báo arraylist chứa các transaction
         try (PreparedStatement stmt = conn.prepareStatement(GET_TRANSACTIONS_SQL)) {
             stmt.setString(1, user.getUsername());
-            try (ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = stmt.executeQuery()) { // lấy dữ liệu từ các cột có username = username của user
                 while (rs.next()) {
-                    Object[] row = createTransactionRow(rs);
-                    transactions.add(row);
+                    Object[] row = createTransactionRow(rs); // tạo một hàng mới từ dữ liệu của một hàng trong bảng
+                    transactions.add(row); // thêm hàng mới vào arraylist
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return transactions.toArray(new Object[0][]);
+        return transactions.toArray(new Object[0][]); // chuyển arraylist thành mảng 2 chiều
     }
 
     private Object[] createTransactionRow(ResultSet rs) throws SQLException {
         String categoryId = rs.getString("category_id");
-        String categoryName = getCategoryName(categoryId);
+        String categoryName = getCategoryName(categoryId); // lấy tên category từ id trong bảng category
         SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT, Locale.getDefault());
         return new Object[] {
-                categoryName,
-                rs.getString("description"),
-                dateFormat.format(rs.getDate("Date")),
-                rs.getDouble("Amount"),
-                rs.getInt("id")
+                categoryName, // tên danh mục
+                rs.getString("description"), // mô tả
+                dateFormat.format(rs.getDate("Date")), // ngày
+                rs.getDouble("Amount"), // số tiền
+                rs.getInt("id") // id
         };
     }
 
@@ -159,6 +160,30 @@ public class Tabletransaction {
         try (PreparedStatement stmt = conn.prepareStatement(GET_TRANSACTIONS_BY_DATE_SQL)) {
             stmt.setString(1, user.getUsername());
             stmt.setString(2, date);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Object[] row = createTransactionRow(rs);
+                    transactions.add(row);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return new Object[0][];
+        }
+        return transactions.toArray(new Object[0][]);
+    }
+
+    public Object[][] getTransactionwithCategory(String category) {
+        ArrayList<Object[]> transactions = new ArrayList<>();
+        transaction transaction = new transaction(category);
+
+        if (category != "IC_0" && category != "EX_0") {
+            transaction.setCategory(category, conn);
+        }
+        try (PreparedStatement stmt = conn.prepareStatement(GET_TRANSACTIONS_BY_CATEGORY_SQL)) {
+            stmt.setString(1, user.getUsername());
+            stmt.setString(2, transaction.getCategory());
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
