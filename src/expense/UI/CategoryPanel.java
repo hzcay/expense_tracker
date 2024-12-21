@@ -13,12 +13,12 @@ import user.user_class.User;
 
 import java.awt.*;
 import java.sql.Connection;
+import java.util.Arrays;
 import java.util.function.BiConsumer;
 
 public class CategoryPanel extends JPanel {
     private static final int PANEL_WIDTH = 1200;
     private static final int PANEL_HEIGHT = 800;
-    private static final int BORDER_SPACING = 10;
     private static final int TABLE_ROW_HEIGHT = 60;
     private static final int TABLE_HEADER_HEIGHT = 55;
 
@@ -39,6 +39,7 @@ public class CategoryPanel extends JPanel {
             "🏢 Business",
             "📈 Subsidy", "📦 Others" };
     private static final String TRANSACTION_HISTORY = "Transaction History";
+    private boolean isAscending = true;
 
     private Connection conn = new connectdb().getconnectdb();
     private Tabletransaction tb;
@@ -213,7 +214,7 @@ public class CategoryPanel extends JPanel {
         for (Component c : expenseGrid.getComponents()) {
             if (c instanceof JButton) {
                 JButton button = (JButton) c;
-                button.addActionListener(e -> {
+                button.addActionListener(_ -> {
                     String category = button.getText();
                     if (category != "📦 Others") {
                         showTransactionsDialog(category);
@@ -227,7 +228,7 @@ public class CategoryPanel extends JPanel {
         for (Component c : incomeGrid.getComponents()) {
             if (c instanceof JButton) {
                 JButton button = (JButton) c;
-                button.addActionListener(e -> {
+                button.addActionListener(_ -> {
                     String category = button.getText();
                     if (category != "📦 Others") {
                         showTransactionsDialog(category);
@@ -410,6 +411,24 @@ public class CategoryPanel extends JPanel {
                 }
             }
         });
+
+        table.getTableHeader().addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                int column = table.columnAtPoint(e.getPoint());
+                if (column == 3) {
+                    tb = new Tabletransaction(conn, user);
+                    Object[][] data = tb.getTransactionwithCategory(category);
+                    Sorttable(data);
+
+                    table.setModel(new javax.swing.table.DefaultTableModel(
+                            data,
+                            new String[] { "Category", "Description", "Date", "Amount" }));
+                    table.revalidate();
+                    table.repaint();
+                }
+            }
+        });
         table.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseExited(java.awt.event.MouseEvent e) {
@@ -560,5 +579,32 @@ public class CategoryPanel extends JPanel {
 
         panel.add(titlePanel, BorderLayout.NORTH);
         return panel;
+    }
+
+    public void Sorttabledown(Object[][] data) {
+        Arrays.sort(data, (a, b) -> {
+            double amountA = Double.parseDouble(a[3].toString().replace("$", ""));
+            double amountB = Double.parseDouble(b[3].toString().replace("$", ""));
+            return Double.compare(amountB, amountA);
+        });
+        tb.setData(data);
+    }
+
+    public void Sorttableup(Object[][] data) {
+        Arrays.sort(data, (a, b) -> {
+            double amountA = Double.parseDouble(a[3].toString().replace("$", ""));
+            double amountB = Double.parseDouble(b[3].toString().replace("$", ""));
+            return Double.compare(amountA, amountB);
+        });
+        tb.setData(data);
+    }
+
+    public void Sorttable(Object[][] data) {
+        if (isAscending) {
+            Sorttableup(data);
+        } else {
+            Sorttabledown(data);
+        }
+        isAscending = !isAscending;
     }
 }

@@ -21,6 +21,7 @@ import javafx.scene.Scene;
 import javafx.scene.web.WebView;
 import org.json.JSONArray;
 import user.user_class.User;
+import java.util.Arrays;
 
 public class ExpenseDashboard extends JPanel {
 
@@ -58,6 +59,7 @@ public class ExpenseDashboard extends JPanel {
             "SUM(CASE WHEN amount < 0 THEN ABS(amount) ELSE 0 END) as expense " +
             "FROM expensetracker WHERE username = ? " +
             "GROUP BY DATE(date) ORDER BY date";
+    private boolean isAscending = true;
 
     private Connection conn = new connectdb().getconnectdb();
     private Tabletransaction tb;
@@ -339,6 +341,18 @@ public class ExpenseDashboard extends JPanel {
             }
         });
 
+        table.getTableHeader().addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                int column = table.columnAtPoint(e.getPoint());
+                if (column == 3) {
+                    Sorttable(data);
+                    table.revalidate();
+                    table.repaint();
+                }
+            }
+        });
+
         table.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseExited(java.awt.event.MouseEvent e) {
@@ -569,5 +583,32 @@ public class ExpenseDashboard extends JPanel {
         public Insets getBorderInsets(Component c) {
             return new Insets(5, 5, 5, 5);
         }
+    }
+
+    public void Sorttabledown(Object[][] data) {
+        Arrays.sort(data, (a, b) -> {
+            double amountA = Double.parseDouble(a[3].toString().replace("$", ""));
+            double amountB = Double.parseDouble(b[3].toString().replace("$", ""));
+            return Double.compare(amountB, amountA);
+        });
+        tb.setData(data);
+    }
+
+    public void Sorttableup(Object[][] data) {
+        Arrays.sort(data, (a, b) -> {
+            double amountA = Double.parseDouble(a[3].toString().replace("$", ""));
+            double amountB = Double.parseDouble(b[3].toString().replace("$", ""));
+            return Double.compare(amountA, amountB);
+        });
+        tb.setData(data);
+    }
+
+    public void Sorttable(Object[][] data) {
+        if (isAscending) {
+            Sorttableup(data);
+        } else {
+            Sorttabledown(data);
+        }
+        isAscending = !isAscending;
     }
 }

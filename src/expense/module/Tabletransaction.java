@@ -9,6 +9,7 @@ import user.user_class.User;
 public class Tabletransaction {
     private final Connection conn;
     private final User user;
+    private Object[][] data;
 
     private static final String GET_TRANSACTIONS_SQL = "SELECT * FROM expensetracker WHERE Username = ?";
     private static final String GET_CATEGORY_SQL = "SELECT * FROM category WHERE category_id = ?";
@@ -30,32 +31,44 @@ public class Tabletransaction {
         this.user = user;
     }
 
+    public void setData(Object[][] newData) {
+
+        this.data = newData;
+
+    }
+
+    public Object[][] getData() {
+
+        return this.data;
+
+    }
+
     public Object[][] getTransactions() {
-        ArrayList<Object[]> transactions = new ArrayList<>(); // khái báo arraylist chứa các transaction
+        ArrayList<Object[]> transactions = new ArrayList<>();
         try (PreparedStatement stmt = conn.prepareStatement(GET_TRANSACTIONS_SQL)) {
             stmt.setString(1, user.getUsername());
-            try (ResultSet rs = stmt.executeQuery()) { // lấy dữ liệu từ các cột có username = username của user
+            try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    Object[] row = createTransactionRow(rs); // tạo một hàng mới từ dữ liệu của một hàng trong bảng
-                    transactions.add(row); // thêm hàng mới vào arraylist
+                    Object[] row = createTransactionRow(rs);
+                    transactions.add(row);
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return transactions.toArray(new Object[0][]); // chuyển arraylist thành mảng 2 chiều
+        return transactions.toArray(new Object[0][]);
     }
 
     private Object[] createTransactionRow(ResultSet rs) throws SQLException {
         String categoryId = rs.getString("category_id");
-        String categoryName = getCategoryName(categoryId); // lấy tên category từ id trong bảng category
+        String categoryName = getCategoryName(categoryId);
         SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT, Locale.getDefault());
         return new Object[] {
-                categoryName, // tên danh mục
-                rs.getString("description"), // mô tả
-                dateFormat.format(rs.getDate("Date")), // ngày
-                rs.getDouble("Amount"), // số tiền
-                rs.getInt("id") // id
+                categoryName,
+                rs.getString("description"),
+                dateFormat.format(rs.getDate("Date")),
+                rs.getDouble("Amount"),
+                rs.getInt("id")
         };
     }
 

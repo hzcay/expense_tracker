@@ -12,6 +12,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 
 import com.formdev.flatlaf.FlatLightLaf;
@@ -71,6 +72,7 @@ public class Extrack extends JPanel {
 
     private static final String GET_INCOME_SQL = "SELECT SUM(amount) as total FROM expensetracker WHERE username = ? AND amount > 0";
     private static final String GET_EXPENSE_SQL = "SELECT ABS(SUM(amount)) as total FROM expensetracker WHERE username = ? AND amount < 0";
+    private boolean isAscending = true;
 
     private Connection conn = new connectdb().getconnectdb();
     private Tabletransaction tb;
@@ -87,21 +89,18 @@ public class Extrack extends JPanel {
     }
 
     private double getIncomeBalance() {
-        // tính tổng số tiền thu lọc theo username với điều kiện số tiền > 0
         return executeSumQuery(GET_INCOME_SQL);
     }
 
     private double getExpenseBalance() {
-        // tính tổng số tiền chi tiêu lọc theo username với điều kiện số tiền < 0
         return executeSumQuery(GET_EXPENSE_SQL);
     }
 
-    private double executeSumQuery(String sql) { // thực thi câu lệnh sql
+    private double executeSumQuery(String sql) {
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, user.getUsername());
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    // trả về giá trị của cột total = Sum(amount) or ABS(Sum(amount))
                     return rs.getDouble("total");
                 }
             }
@@ -111,7 +110,6 @@ public class Extrack extends JPanel {
         return 0.0;
     }
 
-    // panel chính chứa các phần tử giao diện giao dịch
     private JPanel createMainContent() {
         JPanel mainContent = new JPanel(new BorderLayout());
         mainContent.setBackground(BACKGROUND_COLOR);
@@ -129,9 +127,7 @@ public class Extrack extends JPanel {
     private JPanel createTopSection() {
         JPanel topSection = new JPanel(new GridLayout(1, 3, BORDER_SPACING, 0));
         topSection.setBackground(BACKGROUND_COLOR);
-        double totalBalance = getIncomeBalance() - getExpenseBalance(); // tổng số tiền = số tiền thu - số tiền chi
-
-        // tạo 3 card hiển thị thông tin số tiền thu, số tiền chi, tổng số tiền
+        double totalBalance = getIncomeBalance() - getExpenseBalance();
         topSection.add(createGradientCard(BALANCE_TITLE, String.format(AMOUNT_FORMAT, totalBalance),
                 new Color(37, 47, 63), new Color(52, 63, 83)));
         topSection.add(createGradientCard(EXPENSE_TITLE, String.format(AMOUNT_FORMAT, getExpenseBalance()),
@@ -742,9 +738,9 @@ public class Extrack extends JPanel {
 
     private JTable getTable() {
         if (table == null) {
-            String[] columns = { "Category", "Description", "Date", "Amount" }; // các cột của bảng
-            tb = new Tabletransaction(conn, user); // tạo bảng
-            Object[][] data = tb.getTransactions(); // lấy dữ liệu từ bảng expensetracker
+            String[] columns = { "Category", "Description", "Date", "Amount" };
+            tb = new Tabletransaction(conn, user);
+            Object[][] data = tb.getTransactions();
             table = new JTable(data, columns);
         }
         return table;
@@ -867,6 +863,24 @@ public class Extrack extends JPanel {
         table.setFillsViewportHeight(true);
         table.setEnabled(true);
 
+        table.getTableHeader().addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                int column = table.columnAtPoint(e.getPoint());
+                if (column == 3) {
+                    tb = new Tabletransaction(conn, user);
+                    Object[][] data = tb.getTransactions();
+                    Sorttable(data);
+
+                    table.setModel(new javax.swing.table.DefaultTableModel(
+                            data,
+                            new String[] { "Category", "Description", "Date", "Amount" }));
+                    table.revalidate();
+                    table.repaint();
+                }
+            }
+        });
+
         JTableHeader header = table.getTableHeader();
         header.setFont(new Font("Product Sans", Font.BOLD, 14));
         header.setBackground(new Color(240, 243, 247));
@@ -904,8 +918,6 @@ public class Extrack extends JPanel {
                 titleLabel.setForeground(TEXT_COLOR_PRIMARY);
             }
         });
-
-        headerPanel.add(titleLabel);
 
         JSeparator separator = new JSeparator() {
             @Override
@@ -946,5 +958,32 @@ public class Extrack extends JPanel {
         return BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(0, 3, 0, 0, new Color(82, 186, 255)),
                 createEmptyBorder());
+    }
+
+    public void Sorttabledown(Object[][] data) {
+        Arrays.sort(data, (a, b) -> {
+            double amountA = Double.parseDouble(a[3].toString().replace("$", ""));
+            double amountB = Double.parseDouble(b[3].toString().replace("$", ""));
+            return Double.compare(amountB, amountA);
+        });
+        tb.setData(data);
+    }
+
+    public void Sorttableup(Object[][] data) {
+        Arrays.sort(data, (a, b) -> {
+            double amountA = Double.parseDouble(a[3].toString().replace("$", ""));
+            double amountB = Double.parseDouble(b[3].toString().replace("$", ""));
+            return Double.compare(amountA, amountB);
+        });
+        tb.setData(data);
+    }
+
+    public void Sorttable(Object[][] data) {
+        if (isAscending) {
+            Sorttableup(data);
+        } else {
+            Sorttabledown(data);
+        }
+        isAscending = !isAscending;
     }
 }
